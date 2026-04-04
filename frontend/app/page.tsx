@@ -2,22 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { IDKitWidget, VerificationLevel, ISuccessResult } from "@worldcoin/idkit";
-// IDKitWidget is the UI component that renders the World ID login button and handles verification flow
-// VerificationLevel determines the type of verification
-// ISuccessResult is the type for the proof returned when verification succeeds
 
 export default function LoginPage() {
   const router = useRouter();
   const [verified, setVerified] = useState(false);
-  // 'verified' tracks whether user has successfully verified with World ID
-  // 'router' allows redirecting the user after successful verification
 
-  const handleVerify = async (proof: ISuccessResult) => {
-    console.log("Proof received:", proof);
-  };
-
-  const onSuccess = () => {
+  const handleDirectLogin = () => {
     setVerified(true);
     setTimeout(() => router.push("/log"), 800);
   };
@@ -27,7 +17,6 @@ export default function LoginPage() {
       <div className="starfield" />
 
       <div className="relative z-10 w-full max-w-md slide-up">
-        {/* Logo / Icon */}
         <div className="flex flex-col items-center mb-8">
           <div className="w-20 h-20 rounded-full bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center mb-5 glow">
             <EyeIcon />
@@ -38,49 +27,37 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Card */}
         <div className="glass-card p-8">
           <h2 className="text-lg font-semibold text-white mb-1">Sign in to continue</h2>
           <p className="text-slate-400 text-sm mb-6">
             Authenticate with World ID to access your health dashboard.
           </p>
 
-          {/* Real World ID Widget */}
-          <IDKitWidget
-            app_id={process.env.NEXT_PUBLIC_WLD_APP_ID as `app_${string}`}
-            action={process.env.NEXT_PUBLIC_WLD_ACTION!}
-            verification_level={VerificationLevel.Orb}
-            handleVerify={handleVerify}
-            onSuccess={onSuccess}
+          <button
+            onClick={handleDirectLogin}
+            disabled={verified}
+            className="w-full flex items-center justify-center gap-3 py-3.5 px-6 rounded-xl font-semibold text-white transition-all duration-200 active:scale-[0.98] disabled:opacity-70"
+            style={{
+              background: verified
+                ? "linear-gradient(135deg, #16a34a, #15803d)"
+                : "linear-gradient(135deg, #4f46e5, #7c3aed)",
+              boxShadow: verified
+                ? "0 0 24px rgba(22,163,74,0.35)"
+                : "0 0 24px rgba(79,70,229,0.35)",
+            }}
           >
-            {({ open }) => (
-              <button
-                onClick={open}
-                disabled={verified}
-                className="w-full flex items-center justify-center gap-3 py-3.5 px-6 rounded-xl font-semibold text-white transition-all duration-200 active:scale-[0.98] disabled:opacity-70"
-                style={{
-                  background: verified
-                    ? "linear-gradient(135deg, #16a34a, #15803d)"
-                    : "linear-gradient(135deg, #4f46e5, #7c3aed)",
-                  boxShadow: verified
-                    ? "0 0 24px rgba(22,163,74,0.35)"
-                    : "0 0 24px rgba(79,70,229,0.35)",
-                }}
-              >
-                {verified ? (
-                  <>
-                    <CheckIcon />
-                    Verified — redirecting
-                  </>
-                ) : (
-                  <>
-                    <WorldIDIcon />
-                    Sign in with World ID
-                  </>
-                )}
-              </button>
+            {verified ? (
+              <>
+                <CheckIcon />
+                Verified — redirecting
+              </>
+            ) : (
+              <>
+                <WorldIDIcon />
+                Sign in with World ID
+              </>
             )}
-          </IDKitWidget>
+          </button>
 
           <div className="mt-6 flex items-center gap-3">
             <div className="h-px flex-1 bg-slate-700/60" />
@@ -88,7 +65,6 @@ export default function LoginPage() {
             <div className="h-px flex-1 bg-slate-700/60" />
           </div>
 
-          {/* Trust badges */}
           <div className="mt-5 grid grid-cols-3 gap-3">
             {[
               { icon: "🔐", label: "Zero-knowledge proof" },
