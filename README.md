@@ -1,4 +1,4 @@
-# 🛸 SANS — Spaceflight-Associated Neuro-Ocular Syndrome Risk Monitor
+# 🛸 SANSight — Spaceflight-Associated Neuro-Ocular Syndrome Risk Monitor
 
 **An AI-powered health monitoring system that detects early warning signs of SANS in astronauts.**
 
@@ -14,15 +14,14 @@ SANS is one of the most significant unresolved health risks of long-duration spa
 
 ---
 
-## What SANS Does
+## What SANSight Does
 
-SANS takes in an astronaut's biometric data and outputs a **personalized risk percentage** for developing SANS. It is not a diagnostic tool — it is an early warning system.
+SANSight takes in an astronaut's biometric data and outputs a **personalized risk percentage** for developing SANS. It is not a diagnostic tool — it is an early warning system.
 
 **Inputs:**
 - 📷 Retinal scan image (uploaded by user)
 - 🧂 Sodium / salt intake levels
 - 💊 Vitamin D, Calcium, Magnesium levels
-- 🏋️ Exercise logs (type, duration, intensity)
 
 **Output:**
 - A SANS risk score (0–100%)
@@ -36,13 +35,13 @@ SANS takes in an astronaut's biometric data and outputs a **personalized risk pe
 ```
 User Input (retinal scan + biometrics)
         │
-        ├──► CNN Model (EfficientNet-B0)     ← analyzes retinal scan image
+        ├──► CNN Model     ← analyzes retinal scan image
         │         └── Retinal Risk Score
         │
-        ├──► XGBoost / Random Forest Model   ← analyzes tabular health data
+        ├──► Random Forest Model   ← analyzes tabular health data
         │         └── Biometric Risk Score
         │
-        └──► Weighted Fusion
+        └──► TensorFlow
                   └── Final SANS Risk %  ──► Displayed to User
 ```
 
@@ -50,8 +49,8 @@ User Input (retinal scan + biometrics)
 
 | Model | Input | Purpose |
 |---|---|---|
-| EfficientNet-B0 (CNN) | Retinal scan image | Detects structural eye changes associated with SANS |
-| XGBoost / Random Forest | Sodium, vitamins, exercise data | Identifies biometric risk patterns |
+| CNN | Retinal scan image | Detects structural eye changes associated with SANS |
+| Random Forest | Vitamins and Sodium | Identifies biometric risk patterns |
 | Weighted Average Fusion | Both scores | Combines into a single interpretable risk percentage |
 
 > The CNN uses **transfer learning** from ImageNet weights, fine-tuned on retinal disease datasets. The tabular model is trained on NASA astronaut health and nutrition data.
@@ -63,10 +62,8 @@ User Input (retinal scan + biometrics)
 | Dataset | Source | Used For |
 |---|---|---|
 | Astronaut Health Dataset | [Kaggle](https://www.kaggle.com/datasets/khushichhabadia/astronaut-health-dataset) | General astronaut health baselines |
-| Kermany2018 Eye Dataset | [Kaggle](https://www.kaggle.com/datasets/paultimothymooney/kermany2018) | Retinal scan CNN training |
 | Eye Diseases Classification | [Kaggle](https://www.kaggle.com/datasets/gunavenkatdoddi/eye-diseases-classification) | Retinal scan CNN training |
 | NASA Nutrition Data (Vitamin D, Ca, Mg, Na) | [NASA LSDA](https://nlsp.nasa.gov/view/lsdapub/lsda_dataset/bd251656-b948-512e-86a7-03a67add6d60) | Biometric model features |
-| NASA Exercise Data | [NASA LSDA](https://nlsp.nasa.gov/view/lsdapub/lsda_mission/593a6726-8650-551a-8d67-0f03468de92f) | Exercise feature engineering |
 | NASA Open Science Data | [data.gov](https://catalog.data.gov/dataset/?q=elderly+health+data&organization=nasa-gov) | Supplementary health data |
 
 ---
@@ -77,9 +74,9 @@ User Input (retinal scan + biometrics)
 |---|---|
 | Frontend | React / Next.js |
 | Backend API | FastAPI (Python) |
-| ML – Tabular | scikit-learn, XGBoost |
-| ML – Vision | PyTorch, EfficientNet-B0 |
-| ML Training | Google Colab (GPU) |
+| ML – Tabular | Random Forest |
+| ML – Vision | CNN |
+| ML Training | TensorFlow |
 | Authentication | [World ID](https://docs.world.org/world-id/overview) |
 | Data Processing | pandas, NumPy |
 
@@ -90,7 +87,6 @@ User Input (retinal scan + biometrics)
 - 🔐 **World ID Login** — privacy-preserving authentication using World ID
 - 📤 **Retinal Scan Upload** — user submits an eye scan for AI analysis
 - 📋 **Manual Biometric Input** — log sodium intake and vitamin levels
-- 🏃 **Exercise Logging** — log workouts by type, duration, and intensity (1–10 scale); repeat exercises are auto-saved
 - 📊 **Risk Dashboard** — visual risk score with breakdown of contributing factors
 - 📈 **Trend Tracking** — monitor risk changes over time
 
@@ -137,8 +133,6 @@ MODEL_PATH=./models/
 | `POST` | `/analyze/retinal` | Upload retinal scan, returns vision risk score |
 | `POST` | `/analyze/biometrics` | Submit health data JSON, returns biometric risk score |
 | `GET` | `/risk-summary` | Returns fused SANS risk percentage |
-| `POST` | `/exercise/log` | Log an exercise session |
-| `GET` | `/exercise/history` | Retrieve saved exercise history |
 
 ---
 
