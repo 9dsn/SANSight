@@ -1,3 +1,4 @@
+/** Maps HttpError, ZodError, and unknown errors to JSON responses; logs 500s. */
 import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import { HttpError } from "../utils/httpError";

@@ -1,3 +1,5 @@
+// SANSight persistence: anonymous User via World ID nullifier; health, vision, exercise, and risk results.
+
 generator client {
   provider = "prisma-client-js"
 }

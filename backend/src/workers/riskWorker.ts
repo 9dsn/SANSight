@@ -1,3 +1,4 @@
+/** Separate process: consumes risk-recompute jobs and runs riskService.computeAndPersist. */
 import { Worker } from "bullmq";
 import { prisma } from "../db/prisma";
 import { redisConnection } from "../queue/connection";

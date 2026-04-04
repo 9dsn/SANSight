@@ -1,3 +1,4 @@
+/** Application errors with HTTP status and optional JSON-safe details for clients. */
 export class HttpError extends Error {
   public readonly statusCode: number;
   public readonly details?: unknown;

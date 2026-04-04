@@ -1,3 +1,4 @@
+/** Mounts all /api/* route modules (each sub-router defines its own paths). */
 import { Router } from "express";
 import { authRoutes } from "./authRoutes";
 import { exerciseRoutes } from "./exerciseRoutes";

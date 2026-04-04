@@ -1,3 +1,4 @@
+/** Single PrismaClient; reused in dev via global to survive hot reloads. */
 import { PrismaClient } from "@prisma/client";
 
 declare global {

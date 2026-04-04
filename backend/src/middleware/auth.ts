@@ -1,3 +1,4 @@
+/** JWT from Authorization: Bearer or signed sans_session cookie; sets req.userId. */
 import { NextFunction, Request, Response } from "express";
 import { verifySessionToken } from "../utils/jwt";
 import { HttpError } from "../utils/httpError";

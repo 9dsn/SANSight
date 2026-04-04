@@ -1,3 +1,4 @@
+/** Structured logging (Pino); pretty output in non-production only. */
 import pino from "pino";
 import { env } from "../config/env";
 

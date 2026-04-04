@@ -1,3 +1,4 @@
+/** CRUD for nutrition-related metrics (sodium, vitamins, minerals) used in risk modeling. */
 import { prisma } from "../db/prisma";
 
 type CreateHealthMetricsInput = {

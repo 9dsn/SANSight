@@ -1,3 +1,4 @@
+/** AES-256-GCM encryption for JSON payloads (e.g. risk input snapshots at rest). */
 import crypto from "node:crypto";
 import { env } from "../config/env";
 

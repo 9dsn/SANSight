@@ -1,3 +1,4 @@
+/** Zod schemas shared by validate() middleware for request body/query. */
 import { z } from "zod";
 
 export const verifyWorldIdSchema = z.object({

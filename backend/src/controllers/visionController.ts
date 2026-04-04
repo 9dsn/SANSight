@@ -1,3 +1,4 @@
+/** Multipart image upload to S3, optional eye_metrics JSON, then enqueue risk recompute. */
 import { Request, Response } from "express";
 import { enqueueRiskRecompute } from "../queue/riskQueue";
 import { HttpError } from "../utils/httpError";

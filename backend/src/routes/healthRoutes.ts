@@ -1,3 +1,4 @@
+/** Authenticated: POST/GET /health (nutrition metrics). */
 import { Router } from "express";
 import { healthController } from "../controllers/healthController";
 import { requireAuth } from "../middleware/auth";

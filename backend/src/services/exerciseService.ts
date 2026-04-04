@@ -1,3 +1,4 @@
+/** Exercise logs and per-type template defaults derived from recent activity. */
 import { prisma } from "../db/prisma";
 
 type CreateExerciseInput = {
