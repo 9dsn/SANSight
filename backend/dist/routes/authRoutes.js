@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.authRoutes = void 0;
+const express_1 = require("express");
+const authController_1 = require("../controllers/authController");
+const asyncHandler_1 = require("../utils/asyncHandler");
+const validate_1 = require("../middleware/validate");
+const schemas_1 = require("./schemas");
+exports.authRoutes = (0, express_1.Router)();
+exports.authRoutes.post("/verify-world-id", (0, validate_1.validate)(schemas_1.verifyWorldIdSchema), (0, asyncHandler_1.asyncHandler)(authController_1.authController.verifyWorldId));

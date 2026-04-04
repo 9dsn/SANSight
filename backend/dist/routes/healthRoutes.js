@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.healthRoutes = void 0;
+const express_1 = require("express");
+const healthController_1 = require("../controllers/healthController");
+const auth_1 = require("../middleware/auth");
+const validate_1 = require("../middleware/validate");
+const asyncHandler_1 = require("../utils/asyncHandler");
+const schemas_1 = require("./schemas");
+exports.healthRoutes = (0, express_1.Router)();
+exports.healthRoutes.use(auth_1.requireAuth);
+exports.healthRoutes.post("/health", (0, validate_1.validate)(schemas_1.createHealthSchema), (0, asyncHandler_1.asyncHandler)(healthController_1.healthController.create));
+exports.healthRoutes.get("/health", (0, validate_1.validate)(schemas_1.listQuerySchema, "query"), (0, asyncHandler_1.asyncHandler)(healthController_1.healthController.list));

@@ -6,8 +6,8 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 # configuration
 IMG_SIZE = (224, 224)
 BATCH_SIZE = 32
-EPOCHS = 20
-DATA_DIR = "data"  # contains /sans and /normal subfolders
+EPOCHS = 50
+DATA_DIR = "../data"  # contains /sans and /normal subfolders
 
 # data augmentation
 aug = ImageDataGenerator(
@@ -55,7 +55,7 @@ output = layers.Dense(1, activation="sigmoid")(x)  # 0-1 risk score
 model = Model(inputs=base_model.input, outputs=output)
 
 # handles imbalances
-class_weight = {0: 1.0, 1: 500.0}  # 0=normal, 1=SANS
+class_weight = {0: 1.0, 1: 1000.0}  # 0=normal, 1=SANS
 
 # compile and training of the model
 model.compile(

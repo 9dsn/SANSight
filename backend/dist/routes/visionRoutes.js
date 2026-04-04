@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.visionRoutes = void 0;
+const express_1 = require("express");
+const visionController_1 = require("../controllers/visionController");
+const auth_1 = require("../middleware/auth");
+const upload_1 = require("../middleware/upload");
+const asyncHandler_1 = require("../utils/asyncHandler");
+exports.visionRoutes = (0, express_1.Router)();
+exports.visionRoutes.use(auth_1.requireAuth);
+exports.visionRoutes.post("/vision/upload", upload_1.uploadVisionImage.single("image"), (0, asyncHandler_1.asyncHandler)(visionController_1.visionController.upload));
