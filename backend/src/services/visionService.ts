@@ -1,3 +1,4 @@
+/** Persists eye-imaging metadata and metrics after S3 upload (image URL + JSON metrics). */
 import { Prisma } from "@prisma/client";
 import { prisma } from "../db/prisma";
 

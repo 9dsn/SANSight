@@ -1,10 +1,7 @@
 import { prisma } from "../db/prisma";
 
+/** Anonymous users keyed by World ID nullifier hash (no PII stored). */
 export const userService = {
-  async findById(id: string) {
-    return prisma.user.findUnique({ where: { id } });
-  },
-
   async findOrCreateByNullifier(nullifierHash: string) {
     return prisma.user.upsert({
       where: { nullifier_hash: nullifierHash },

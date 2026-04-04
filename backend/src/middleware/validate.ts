@@ -1,3 +1,4 @@
+/** Parses and replaces req.body | query | params with Zod output (strict shapes). */
 import { NextFunction, Request, Response } from "express";
 import { AnyZodObject, ZodError } from "zod";
 import { HttpError } from "../utils/httpError";

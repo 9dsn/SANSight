@@ -1,3 +1,4 @@
+/** Authenticated: sync predict + latest stored result. */
 import { Router } from "express";
 import { riskController } from "../controllers/riskController";
 import { requireAuth } from "../middleware/auth";

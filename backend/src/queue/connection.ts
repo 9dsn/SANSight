@@ -1,3 +1,4 @@
+/** Shared Redis connection for BullMQ (maxRetriesPerRequest: null required by BullMQ). */
 import IORedis from "ioredis";
 import { env } from "../config/env";
 

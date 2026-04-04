@@ -1,3 +1,4 @@
+/** S3-compatible uploads for vision images (supports custom endpoint for MinIO, etc.). */
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";

@@ -1,3 +1,4 @@
+/** Typed, validated process.env (Zod). Fails at startup if required secrets or URLs are missing. */
 import { config } from "dotenv";
 import { z } from "zod";
 

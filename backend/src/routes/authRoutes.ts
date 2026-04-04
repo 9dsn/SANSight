@@ -1,3 +1,4 @@
+/** Public auth: World ID verification only. */
 import { Router } from "express";
 import { authController } from "../controllers/authController";
 import { asyncHandler } from "../utils/asyncHandler";

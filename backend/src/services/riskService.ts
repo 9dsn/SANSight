@@ -1,3 +1,7 @@
+/**
+ * Builds ML feature vectors from latest health, vision, and exercise data;
+ * calls external ML service and stores encrypted snapshots with risk scores.
+ */
 import { prisma } from "../db/prisma";
 import { encryptJson } from "../utils/crypto";
 import { HttpError } from "../utils/httpError";

@@ -1,3 +1,4 @@
+/** Authenticated: POST /vision/upload (multipart). */
 import { Router } from "express";
 import { visionController } from "../controllers/visionController";
 import { requireAuth } from "../middleware/auth";

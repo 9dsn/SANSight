@@ -1,3 +1,4 @@
+/** HTTP client for the separate ML inference service (returns normalized risk_score in [0, 1]). */
 import { env } from "../config/env";
 import { HttpError } from "../utils/httpError";
 

@@ -1,3 +1,4 @@
+/** In-memory multipart parser for vision uploads with MIME whitelist and size cap. */
 import multer from "multer";
 import { env } from "../config/env";
 import { HttpError } from "../utils/httpError";

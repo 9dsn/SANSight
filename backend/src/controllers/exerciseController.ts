@@ -1,3 +1,4 @@
+/** Exercise logging and listing; new logs enqueue background risk recomputation. */
 import { Request, Response } from "express";
 import { enqueueRiskRecompute } from "../queue/riskQueue";
 import { exerciseService } from "../services/exerciseService";

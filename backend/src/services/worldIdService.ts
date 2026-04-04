@@ -1,3 +1,4 @@
+/** Verifies World ID cloud proofs and returns the persistent nullifier hash for account linking. */
 import type { ISuccessResult } from "@worldcoin/idkit-core";
 import { verifyCloudProof } from "@worldcoin/idkit-core/backend";
 import { env } from "../config/env";

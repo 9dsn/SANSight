@@ -1,3 +1,7 @@
+/**
+ * Express application factory: security headers, CORS, rate limits, logging, /api mount, error handling.
+ * Process entrypoint is server.ts (HTTP listen).
+ */
 import "express-async-errors";
 import cookieParser from "cookie-parser";
 import cors from "cors";

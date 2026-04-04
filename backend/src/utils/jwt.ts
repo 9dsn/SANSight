@@ -1,3 +1,4 @@
+/** Short-lived session JWTs; sub claim holds internal user id. Cookie + Authorization both supported in auth middleware. */
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 

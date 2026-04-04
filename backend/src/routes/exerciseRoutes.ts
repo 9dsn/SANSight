@@ -1,3 +1,4 @@
+/** Authenticated: POST/GET /exercise. */
 import { Router } from "express";
 import { exerciseController } from "../controllers/exerciseController";
 import { requireAuth } from "../middleware/auth";

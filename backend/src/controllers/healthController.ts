@@ -1,3 +1,4 @@
+/** Health metrics API; new rows trigger async risk recomputation via BullMQ. */
 import { Request, Response } from "express";
 import { enqueueRiskRecompute } from "../queue/riskQueue";
 import { healthService } from "../services/healthService";

@@ -1,3 +1,4 @@
+/** BullMQ queue for deferred risk recomputation after health/vision/exercise writes. */
 import { Queue } from "bullmq";
 import { redisConnection } from "./connection";
 
@@ -5,7 +6,8 @@ export const RISK_RECOMPUTE_QUEUE = "risk-recompute";
 
 export type RiskRecomputeJob = {
   userId: string;
-  trigger: "health" | "vision" | "exercise" | "manual";
+  /** Which user data change caused the recompute (for logs/metrics). */
+  trigger: "health" | "vision" | "exercise";
 };
 
 export const riskQueue = new Queue<RiskRecomputeJob>(RISK_RECOMPUTE_QUEUE, {

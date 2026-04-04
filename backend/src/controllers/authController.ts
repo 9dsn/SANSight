@@ -1,3 +1,4 @@
+/** World ID login: verify proof, upsert user by nullifier, issue JWT + httpOnly signed session cookie. */
 import { Request, Response } from "express";
 import { env } from "../config/env";
 import { userService } from "../services/userService";

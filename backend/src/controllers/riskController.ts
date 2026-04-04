@@ -1,13 +1,11 @@
 import { Request, Response } from "express";
-import { enqueueRiskRecompute } from "../queue/riskQueue";
 import { riskService } from "../services/riskService";
 
+/** SANS risk scores: sync prediction here already persists; health/vision/exercise enqueue async recompute. */
 export const riskController = {
   async predict(req: Request, res: Response) {
     const userId = req.userId!;
     const prediction = await riskService.computeAndPersist(userId);
-
-    await enqueueRiskRecompute({ userId, trigger: "manual" });
 
     res.status(200).json({
       risk_score: prediction.result.risk_score,
