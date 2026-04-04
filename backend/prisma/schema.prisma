@@ -1,0 +1,81 @@
+// SANSight persistence: anonymous User via World ID nullifier; health, vision, exercise, and risk results.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String            @id @default(uuid()) @db.Uuid
+  nullifier_hash  String            @unique
+  created_at      DateTime          @default(now())
+  healthMetrics   HealthMetrics[]
+  visionData      VisionData[]
+  exerciseLogs    ExerciseLog[]
+  exerciseTemplates ExerciseTemplate[]
+  riskResults     RiskResult[]
+}
+
+model HealthMetrics {
+  id          String   @id @default(uuid()) @db.Uuid
+  user_id     String   @db.Uuid
+  sodium      Float
+  vitamin_d   Float
+  calcium     Float
+  magnesium   Float
+  created_at  DateTime @default(now())
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, created_at])
+}
+
+model VisionData {
+  id          String   @id @default(uuid()) @db.Uuid
+  user_id     String   @db.Uuid
+  image_url   String
+  eye_metrics Json
+  created_at  DateTime @default(now())
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, created_at])
+}
+
+model ExerciseLog {
+  id               String   @id @default(uuid()) @db.Uuid
+  user_id          String   @db.Uuid
+  type             String
+  duration_minutes Int
+  intensity        Int
+  created_at       DateTime @default(now())
+  user             User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, created_at])
+  @@index([user_id, type])
+}
+
+model ExerciseTemplate {
+  id               String @id @default(uuid()) @db.Uuid
+  user_id          String @db.Uuid
+  type             String
+  default_duration Int
+  default_intensity Int
+  user             User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, type])
+}
+
+model RiskResult {
+  id            String   @id @default(uuid()) @db.Uuid
+  user_id       String   @db.Uuid
+  risk_score    Float
+  model_version String
+  input_snapshot Json
+  created_at    DateTime @default(now())
+  user          User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, created_at])
+}
