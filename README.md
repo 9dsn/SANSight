@@ -1,36 +1,155 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🛸 SANS — Spaceflight-Associated Neuro-Ocular Syndrome Risk Monitor
+
+**An AI-powered health monitoring system that detects early warning signs of SANS in astronauts.**
+
+> Built at Catapult · April 2025
+
+---
+
+## What is SANS?
+
+SANS (Spaceflight-Associated Neuro-Ocular Syndrome) is a serious condition affecting astronauts in microgravity. Without gravity, fluids shift toward the head, increasing intracranial pressure and causing **vision changes, eye shape distortion, and potential permanent blindness**.
+
+SANS is one of the most significant unresolved health risks of long-duration spaceflight — this project aims to catch it early.
+
+---
+
+## What SANS Does
+
+SANS takes in an astronaut's biometric data and outputs a **personalized risk percentage** for developing SANS. It is not a diagnostic tool — it is an early warning system.
+
+**Inputs:**
+- 📷 Retinal scan image (uploaded by user)
+- 🧂 Sodium / salt intake levels
+- 💊 Vitamin D, Calcium, Magnesium levels
+- 🏋️ Exercise logs (type, duration, intensity)
+
+**Output:**
+- A SANS risk score (0–100%)
+- Key risk factors driving the score
+- Trend tracking over time
+
+---
+
+## How It Works
+
+```
+User Input (retinal scan + biometrics)
+        │
+        ├──► CNN Model (EfficientNet-B0)     ← analyzes retinal scan image
+        │         └── Retinal Risk Score
+        │
+        ├──► XGBoost / Random Forest Model   ← analyzes tabular health data
+        │         └── Biometric Risk Score
+        │
+        └──► Weighted Fusion
+                  └── Final SANS Risk %  ──► Displayed to User
+```
+
+### ML Models
+
+| Model | Input | Purpose |
+|---|---|---|
+| EfficientNet-B0 (CNN) | Retinal scan image | Detects structural eye changes associated with SANS |
+| XGBoost / Random Forest | Sodium, vitamins, exercise data | Identifies biometric risk patterns |
+| Weighted Average Fusion | Both scores | Combines into a single interpretable risk percentage |
+
+> The CNN uses **transfer learning** from ImageNet weights, fine-tuned on retinal disease datasets. The tabular model is trained on NASA astronaut health and nutrition data.
+
+---
+
+## Datasets Used
+
+| Dataset | Source | Used For |
+|---|---|---|
+| Astronaut Health Dataset | [Kaggle](https://www.kaggle.com/datasets/khushichhabadia/astronaut-health-dataset) | General astronaut health baselines |
+| Kermany2018 Eye Dataset | [Kaggle](https://www.kaggle.com/datasets/paultimothymooney/kermany2018) | Retinal scan CNN training |
+| Eye Diseases Classification | [Kaggle](https://www.kaggle.com/datasets/gunavenkatdoddi/eye-diseases-classification) | Retinal scan CNN training |
+| NASA Nutrition Data (Vitamin D, Ca, Mg, Na) | [NASA LSDA](https://nlsp.nasa.gov/view/lsdapub/lsda_dataset/bd251656-b948-512e-86a7-03a67add6d60) | Biometric model features |
+| NASA Exercise Data | [NASA LSDA](https://nlsp.nasa.gov/view/lsdapub/lsda_mission/593a6726-8650-551a-8d67-0f03468de92f) | Exercise feature engineering |
+| NASA Open Science Data | [data.gov](https://catalog.data.gov/dataset/?q=elderly+health+data&organization=nasa-gov) | Supplementary health data |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React / Next.js |
+| Backend API | FastAPI (Python) |
+| ML – Tabular | scikit-learn, XGBoost |
+| ML – Vision | PyTorch, EfficientNet-B0 |
+| ML Training | Google Colab (GPU) |
+| Authentication | [World ID](https://docs.world.org/world-id/overview) |
+| Data Processing | pandas, NumPy |
+
+---
+
+## Features
+
+- 🔐 **World ID Login** — privacy-preserving authentication using World ID
+- 📤 **Retinal Scan Upload** — user submits an eye scan for AI analysis
+- 📋 **Manual Biometric Input** — log sodium intake and vitamin levels
+- 🏃 **Exercise Logging** — log workouts by type, duration, and intensity (1–10 scale); repeat exercises are auto-saved
+- 📊 **Risk Dashboard** — visual risk score with breakdown of contributing factors
+- 📈 **Trend Tracking** — monitor risk changes over time
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Python 3.10+
+- Node.js 18+
+- pip, npm or yarn
+
+### Installation
 
 ```bash
+# Clone the repo
+git clone https://github.com/your-team/sans-monitor.git
+cd sans-monitor
+
+# Backend setup
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload
+
+# Frontend setup
+cd ../frontend
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create a `.env` file in `/backend`:
+```
+WORLD_ID_APP_ID=your_world_id_app_id
+MODEL_PATH=./models/
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
+## API Endpoints
 
-To learn more about Next.js, take a look at the following resources:
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/analyze/retinal` | Upload retinal scan, returns vision risk score |
+| `POST` | `/analyze/biometrics` | Submit health data JSON, returns biometric risk score |
+| `GET` | `/risk-summary` | Returns fused SANS risk percentage |
+| `POST` | `/exercise/log` | Log an exercise session |
+| `GET` | `/exercise/history` | Retrieve saved exercise history |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Important Disclaimer
 
-## Deploy on Vercel
+> **SANS is not a medical diagnostic tool.** It is a research-grade risk indicator system built for a hackathon. Results should not be used for clinical decision-making. Always consult a qualified medical professional for health assessments.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## References
+
+- [SANS — EyeWiki](https://eyewiki.org/Spaceflight-Associated_Neuro-Ocular_Syndrome_(SANS)#Risk_Factors)
+- [NASA Biological & Physical Sciences Data](https://science.nasa.gov/biological-physical/data/)
+- [World ID Docs](https://docs.world.org/world-id/overview)
