@@ -3,10 +3,15 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { IDKitWidget, VerificationLevel, ISuccessResult } from "@worldcoin/idkit";
+// IDKitWidget is the UI component that renders the World ID login button and handles verification flow
+// VerificationLevel determines the type of verification
+// ISuccessResult is the type for the proof returned when verification succeeds
 
 export default function LoginPage() {
   const router = useRouter();
   const [verified, setVerified] = useState(false);
+  // 'verified' tracks whether user has successfully verified with World ID
+  // 'router' allows redirecting the user after successful verification
 
   const handleVerify = async (proof: ISuccessResult) => {
     console.log("Proof received:", proof);
