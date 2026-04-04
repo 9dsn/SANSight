@@ -2,17 +2,15 @@ import tensorflow as tf
 from tensorflow.keras.applications import EfficientNetB0
 from tensorflow.keras import layers, Model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-import os
 
-#configuration
+# configuration
 IMG_SIZE = (224, 224)
 BATCH_SIZE = 32
 EPOCHS = 20
-DATA_DIR = "data"  # contains /sans and /normal
+DATA_DIR = "data"  # contains /sans and /normal subfolders
 
-# DATA AUGMENT
-# #for SANS (10 images)
-sans_aug = ImageDataGenerator(
+# data augmentation
+aug = ImageDataGenerator(
     rotation_range=20,
     zoom_range=0.2,
     horizontal_flip=True,
@@ -22,12 +20,9 @@ sans_aug = ImageDataGenerator(
     validation_split=0.2
 )
 
-normal_aug = ImageDataGenerator(
-    horizontal_flip=True,
-    validation_split=0.2
-)
-
-train_data = sans_aug.flow_from_directory(
+# loading the data
+# Reads /data/sans (label 1) and /data/normal (label 0) automatically
+train_data = aug.flow_from_directory(
     DATA_DIR,
     target_size=IMG_SIZE,
     batch_size=BATCH_SIZE,
@@ -35,7 +30,7 @@ train_data = sans_aug.flow_from_directory(
     subset="training"
 )
 
-val_data = sans_aug.flow_from_directory(
+val_data = aug.flow_from_directory(
     DATA_DIR,
     target_size=IMG_SIZE,
     batch_size=BATCH_SIZE,
@@ -43,27 +38,26 @@ val_data = sans_aug.flow_from_directory(
     subset="validation"
 )
 
-# MODEL TRANSFER
+# transferting the learning model
 base_model = EfficientNetB0(
     weights="imagenet",
     include_top=False,
     input_shape=(224, 224, 3)
 )
-base_model.trainable = False  # freeze pretrained layers
+base_model.trainable = False
 
 x = base_model.output
 x = layers.GlobalAveragePooling2D()(x)
 x = layers.Dense(128, activation="relu")(x)
 x = layers.Dropout(0.3)(x)
-output = layers.Dense(1, activation="sigmoid")(x)  # binary: SANS or not
+output = layers.Dense(1, activation="sigmoid")(x)  # 0-1 risk score
 
 model = Model(inputs=base_model.input, outputs=output)
 
-# ── Handle Class Imbalance ───────────────────────────
-# Give SANS images much higher weight since we have so few
+# handles imbalances
 class_weight = {0: 1.0, 1: 500.0}  # 0=normal, 1=SANS
 
-# COMPILE AND TRAIN
+# compile and training of the model
 model.compile(
     optimizer="adam",
     loss="binary_crossentropy",
@@ -77,5 +71,6 @@ model.fit(
     class_weight=class_weight
 )
 
+# savinf the model
 model.save("sans_model.h5")
-print("Model saved!")
+print("✅ Model saved as sans_model.h5")
