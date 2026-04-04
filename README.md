@@ -76,7 +76,7 @@ User Input (retinal scan + biometrics)
 | Backend API | FastAPI (Python) |
 | ML – Tabular | Random Forest |
 | ML – Vision | CNN |
-| ML Training | TesnorFlow |
+| ML Training | TensorFlow |
 | Authentication | [World ID](https://docs.world.org/world-id/overview) |
 | Data Processing | pandas, NumPy |
 
@@ -133,8 +133,6 @@ MODEL_PATH=./models/
 | `POST` | `/analyze/retinal` | Upload retinal scan, returns vision risk score |
 | `POST` | `/analyze/biometrics` | Submit health data JSON, returns biometric risk score |
 | `GET` | `/risk-summary` | Returns fused SANS risk percentage |
-| `POST` | `/exercise/log` | Log an exercise session |
-| `GET` | `/exercise/history` | Retrieve saved exercise history |
 
 ---
 
