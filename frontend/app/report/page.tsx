@@ -18,6 +18,20 @@ type RiskResult = {
   recommendations: string[];
 };
 
+type RetinalResult = {
+  detected: boolean;
+  label: string;
+  stage: "Mild" | "Moderate" | "Severe" | "Proliferative" | null;
+  tone: {
+    accent: string;
+    glow: string;
+    panel: string;
+    badge: string;
+    border: string;
+  };
+  summary: string;
+};
+
 type ChatMessage = {
   role: "user" | "assistant";
   content: string;
@@ -49,8 +63,6 @@ function computeRisk(payload: Payload): RiskResult {
   if (magnesium < 310) score += 8;
   else score -= 2;
 
-  if (payload.hasScan) score -= 5;
-
   score = Math.max(5, Math.min(98, score));
 
   const level = levelFromScore(score);
@@ -81,10 +93,6 @@ function computeRisk(payload: Payload): RiskResult {
     factors.push({ label: `Magnesium meets target (${magnesium} mg)`, impact: "low", positive: true });
   }
 
-  if (payload.hasScan) {
-    factors.push({ label: "Retinal scan provided", impact: "low", positive: true });
-  }
-
   const recommendations: string[] = [];
   if (sodium > 2300) recommendations.push("Reduce sodium intake toward the recommended maximum of 2300 mg.");
   if (vitaminD < 10) recommendations.push("Address vitamin D deficiency and aim to move above 10 mcg.");
@@ -94,6 +102,52 @@ function computeRisk(payload: Payload): RiskResult {
   if (level === "High") recommendations.push("Consult a flight surgeon for comprehensive SANS screening protocol.");
 
   return { score, level, factors, recommendations };
+}
+
+function simulateRetinalResult(payload: Payload): RetinalResult {
+  if (!payload.hasScan) {
+    return {
+      detected: false,
+      label: "No SANS Detected",
+      stage: null,
+      tone: {
+        accent: "#22c55e",
+        glow: "rgba(34,197,94,0.24)",
+        panel: "linear-gradient(180deg, rgba(7,28,20,0.96), rgba(7,18,27,0.92))",
+        badge: "rgba(34,197,94,0.12)",
+        border: "rgba(74,222,128,0.28)",
+      },
+      summary: "No retinal SANS findings were simulated for the current report state.",
+    };
+  }
+
+  const abnormalities =
+    Number(payload.sodium > 2300) +
+    Number(payload.vitaminD < 10) +
+    Number(payload.calcium < 1000) +
+    Number(payload.magnesium < 310);
+
+  const stage: RetinalResult["stage"] =
+    abnormalities >= 4 ? "Proliferative" : abnormalities === 3 ? "Severe" : abnormalities === 2 ? "Moderate" : "Mild";
+
+  return {
+    detected: true,
+    label: "SANS Detected",
+    stage,
+    tone: {
+      accent: stage === "Mild" ? "#fb923c" : stage === "Moderate" ? "#f97316" : "#ef4444",
+      glow: stage === "Mild" ? "rgba(251,146,60,0.3)" : stage === "Moderate" ? "rgba(249,115,22,0.3)" : "rgba(239,68,68,0.32)",
+      panel:
+        stage === "Mild"
+          ? "linear-gradient(180deg, rgba(42,20,10,0.96), rgba(12,16,30,0.92))"
+          : stage === "Moderate"
+            ? "linear-gradient(180deg, rgba(52,24,8,0.96), rgba(12,16,30,0.92))"
+            : "linear-gradient(180deg, rgba(44,10,14,0.96), rgba(12,16,30,0.92))",
+      badge: stage === "Mild" ? "rgba(251,146,60,0.14)" : stage === "Moderate" ? "rgba(249,115,22,0.14)" : "rgba(239,68,68,0.14)",
+      border: stage === "Mild" ? "rgba(251,146,60,0.3)" : stage === "Moderate" ? "rgba(249,115,22,0.3)" : "rgba(248,113,113,0.32)",
+    },
+    summary: "A placeholder retinal model flagged simulated optic-disc findings while retinal backend inference is still offline.",
+  };
 }
 
 export default function ReportPage() {
@@ -347,12 +401,15 @@ export default function ReportPage() {
   const { level, factors, recommendations } = result;
   const levelColor = level === "Low" ? "#22c55e" : level === "Moderate" ? "#f59e0b" : "#ef4444";
   const levelBg = level === "Low" ? "rgba(34,197,94,0.1)" : level === "Moderate" ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)";
+  const retinal = payload
+    ? simulateRetinalResult(payload)
+    : simulateRetinalResult({ sodium: 0, vitaminD: 0, calcium: 0, magnesium: 0, hasScan: false });
   const summary =
     level === "Low"
-      ? "Primary metrics sit in a comparatively stable range for this prototype."
+      ? "Biometric inputs remain in a comparatively stable range for this prototype model."
       : level === "Moderate"
-        ? "A few signals are drifting away from target and deserve closer monitoring."
-        : "Multiple health signals are outside target ranges and pushing the risk score upward.";
+        ? "A few biometric signals are drifting away from target and deserve closer monitoring."
+        : "Multiple biometric signals are outside target ranges and pushing the risk score upward.";
   const metricPlanets = [
     {
       name: "Sodium",
@@ -485,15 +542,16 @@ export default function ReportPage() {
 
         <section className="relative mb-6 overflow-hidden rounded-[28px] border border-indigo-300/12 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.18),_transparent_38%),linear-gradient(180deg,rgba(10,15,35,0.98),rgba(8,12,28,0.94))] px-6 py-8 shadow-[0_24px_80px_rgba(2,6,23,0.42)] slide-up sm:px-8">
           <div className="pointer-events-none absolute inset-0">
-            <div className="orbit-drift-slow absolute left-[50%] top-[50%] h-[320px] w-[320px] rounded-full border border-white/6" />
-            <div className="orbit-drift-reverse absolute left-[50%] top-[50%] h-[440px] w-[440px] rounded-full border border-white/4" />
-            <div className="orbit-drift-slow absolute left-[50%] top-[50%] h-[560px] w-[560px] rounded-full border border-white/[0.03]" />
-            <div className="central-glow-pulse absolute left-1/2 top-1/2 h-28 w-28 rounded-full bg-[radial-gradient(circle_at_32%_30%,#f8fafc_0%,#c7d2fe_28%,#4f46e5_62%,#0f172a_100%)] shadow-[0_0_50px_rgba(99,102,241,0.35)]" />
+            <div className="orbit-drift-slow absolute left-[50%] top-[30%] h-[320px] w-[320px] rounded-full border border-white/6" />
+            <div className="orbit-drift-reverse absolute left-[50%] top-[30%] h-[440px] w-[440px] rounded-full border border-white/4" />
+            <div className="orbit-drift-slow absolute left-[50%] top-[30%] h-[560px] w-[560px] rounded-full border border-white/[0.03]" />
+            <div className="central-glow-pulse absolute left-1/2 top-[30%] h-28 w-28 rounded-full bg-[radial-gradient(circle_at_32%_30%,#f8fafc_0%,#c7d2fe_28%,#4f46e5_62%,#0f172a_100%)] shadow-[0_0_50px_rgba(99,102,241,0.35)]" />
             {metricPlanets.map((planet) => (
               <div
                 key={planet.name}
-                className="orbit-rotate absolute left-1/2 top-1/2"
+                className="orbit-rotate absolute left-1/2 top-[30%]"
                 style={{
+                  transform: "translate(-50%, -50%)",
                   width: `${planet.orbitSize}px`,
                   height: `${planet.orbitSize}px`,
                   ["--orbit-duration" as string]: `${planet.duration}s`,
@@ -556,58 +614,113 @@ export default function ReportPage() {
               </div>
 
               <div className="mt-8 rounded-[28px] border border-white/8 bg-slate-950/55 p-5 sm:p-6">
-                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-indigo-100/75">Mission Score</p>
-                <div className="mt-5 grid gap-5 xl:grid-cols-[168px_minmax(0,1fr)] xl:items-start">
-                  <div className="relative mx-auto h-40 w-40 xl:mx-0">
-                    <svg className="h-full w-full -rotate-90" viewBox="0 0 160 160">
-                      <circle cx="80" cy="80" r={R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="12" />
-                      <circle
-                        cx="80"
-                        cy="80"
-                        r={R}
-                        fill="none"
-                        stroke={levelColor}
-                        strokeWidth="12"
-                        strokeLinecap="round"
-                        strokeDasharray={`${(animScore / 100) * CIRC} ${CIRC}`}
-                        style={{ transition: "stroke-dasharray 0.05s linear", filter: `drop-shadow(0 0 8px ${levelColor})` }}
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-4xl font-bold text-white">{animScore}</span>
-                      <span className="text-sm text-slate-400">out of 100</span>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-indigo-100/75">Dual Model Results</p>
+                  <span className="rounded-full border border-indigo-300/10 bg-indigo-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-indigo-100/75">
+                    Retinal + Biometric
+                  </span>
+                </div>
+
+                <div className="mt-5 flex flex-col gap-6">
+                  <div
+                    className="rounded-[26px] border p-5"
+                    style={{
+                      borderColor: retinal.tone.border,
+                      background: retinal.tone.panel,
+                      boxShadow: `0 0 28px ${retinal.tone.glow}`,
+                    }}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-300/85">
+                          Retinal Scan Detection
+                        </p>
+                        <h3 className="mt-3 text-2xl font-semibold text-white">
+                          {retinal.detected ? "⚠️ SANS Detected" : "✅ No SANS Detected"}
+                        </h3>
+                      </div>
+                      <span
+                        className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]"
+                        style={{
+                          color: retinal.tone.accent,
+                          background: retinal.tone.badge,
+                          border: `1px solid ${retinal.tone.border}`,
+                        }}
+                      >
+                        {retinal.detected ? "Detection Active" : "Clear Scan"}
+                      </span>
                     </div>
+
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                      <ScanMetric
+                        label="Scan Status"
+                        value={payload?.hasScan ? "Scan uploaded" : "No scan uploaded"}
+                        accent={retinal.tone.accent}
+                      />
+                      <ScanMetric
+                        label="Stage"
+                        value={retinal.stage ?? "Not applicable"}
+                        accent={retinal.tone.accent}
+                      />
+                    </div>
+
+                    <p className="mt-5 text-sm leading-6 text-slate-300">{retinal.summary}</p>
                   </div>
 
-                  <div className="rounded-[24px] border border-indigo-300/10 bg-slate-900/50 p-3.5 sm:p-4">
-                    <div className="mb-3 flex justify-end">
-                    <div className="min-w-[176px] rounded-2xl border border-indigo-300/12 bg-slate-950/70 px-4 py-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-indigo-100/78">Current Status</p>
-                      <div className="mt-2.5">
-                        <div
-                          className="flex w-full justify-center rounded-full px-5 py-1.5 text-sm font-semibold"
-                          style={{ background: levelBg, color: levelColor, border: `1px solid ${levelColor}44` }}
-                        >
-                          {level} Risk
-                          </div>
+                  <div className="rounded-[26px] border border-indigo-300/10 bg-slate-900/50 p-5">
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-indigo-100/78">
+                      Biometric Risk Score
+                    </p>
+                    <div className="mt-5 grid gap-5 xl:grid-cols-[168px_minmax(0,1fr)] xl:items-start">
+                      <div className="relative mx-auto h-40 w-40 xl:mx-0">
+                        <svg className="h-full w-full -rotate-90" viewBox="0 0 160 160">
+                          <circle cx="80" cy="80" r={R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="12" />
+                          <circle
+                            cx="80"
+                            cy="80"
+                            r={R}
+                            fill="none"
+                            stroke={levelColor}
+                            strokeWidth="12"
+                            strokeLinecap="round"
+                            strokeDasharray={`${(animScore / 100) * CIRC} ${CIRC}`}
+                            style={{ transition: "stroke-dasharray 0.05s linear", filter: `drop-shadow(0 0 8px ${levelColor})` }}
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="text-4xl font-bold text-white">{animScore}%</span>
+                          <span className="text-sm text-slate-400">Random Forest</span>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="grid gap-3 md:grid-cols-[minmax(0,1.45fr)_minmax(200px,0.55fr)]">
-                      <BriefPanel
-                        label="Mission Summary"
-                        content={<p className="max-w-2xl text-base leading-8 text-slate-300">{summary}</p>}
-                      />
-                      <BriefPanel label="Factors Tracked" content={<BriefValue value={`${factors.length}`} />} />
-                    </div>
+                      <div className="rounded-[24px] border border-indigo-300/10 bg-slate-950/55 p-3.5 sm:p-4">
+                        <div className="mb-3 w-full rounded-2xl border border-indigo-300/12 bg-slate-950/70 px-4 py-3">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-indigo-100/78">
+                            Current Status
+                          </p>
+                          <div className="mt-2.5">
+                            <div
+                              className="flex w-full justify-center rounded-full px-5 py-1.5 text-sm font-semibold"
+                              style={{ background: levelBg, color: levelColor, border: `1px solid ${levelColor}44` }}
+                            >
+                              {level} Risk
+                            </div>
+                          </div>
+                        </div>
 
-                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                      <BriefPanel
-                        label="Scan Status"
-                        content={<BriefValue value={payload?.hasScan ? "Included" : "Missing"} />}
-                      />
-                      <BriefPanel label="Report Mode" content={<BriefValue value="Solar + Formal" />} />
+                        <div className="grid gap-3 md:grid-cols-[minmax(0,1.45fr)_minmax(200px,0.55fr)]">
+                          <BriefPanel
+                            label="Model Summary"
+                            content={<p className="max-w-2xl text-base leading-8 text-slate-300">{summary}</p>}
+                          />
+                          <BriefPanel label="Factors Tracked" content={<BriefValue value={`${factors.length}`} />} />
+                        </div>
+
+                        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                          <BriefPanel label="Inputs Used" content={<BriefValue value="4 biometric metrics" />} />
+                          <BriefPanel label="Report Mode" content={<BriefValue value="Solar + Formal" />} />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -627,7 +740,21 @@ export default function ReportPage() {
             </p>
           </div>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <MetricBriefCard
+              title="Retinal Detection"
+              value={retinal.detected ? "SANS Detected" : "No SANS Detected"}
+              guidance={retinal.detected ? `Current simulated stage: ${retinal.stage}.` : "No retinal stage is shown when no SANS is detected."}
+              status={retinal.detected ? "Retinal positive" : "Retinal clear"}
+              accent={retinal.tone.accent}
+            />
+            <MetricBriefCard
+              title="Biometric Risk"
+              value={`${result.score.toFixed(0)}%`}
+              guidance="Random Forest model using sodium, vitamin D, calcium, and magnesium."
+              status={`${level} risk`}
+              accent={levelColor}
+            />
             <MetricBriefCard
               title="Sodium"
               value={`${payload?.sodium ?? 0} mg`}
@@ -873,6 +1000,25 @@ function BriefPanel({
 
 function BriefValue({ value }: { value: string }) {
   return <p className="text-lg font-semibold text-white">{value}</p>;
+}
+
+function ScanMetric({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string;
+  accent: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/8 bg-slate-950/40 px-4 py-4">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">{label}</p>
+      <p className="mt-2 text-lg font-semibold" style={{ color: accent }}>
+        {value}
+      </p>
+    </div>
+  );
 }
 
 function MetricBriefCard({

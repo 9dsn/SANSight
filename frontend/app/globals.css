@@ -116,17 +116,13 @@ body {
 }
 .planet-orbit-float { animation: planet-orbit-float 5.5s ease-in-out infinite; }
 
-@keyframes orbit-rotate {
+@keyframes orbit-spin {
   from { transform: translate(-50%, -50%) rotate(0deg); }
   to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 .orbit-rotate {
-  animation-name: orbit-rotate;
-  animation-duration: var(--orbit-duration, 20s);
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  transform-origin: center center;
-  will-change: transform;
+  position: absolute;
+  animation: orbit-spin var(--orbit-duration, 20s) linear infinite;
 }
 
 @keyframes rocket-launch {
