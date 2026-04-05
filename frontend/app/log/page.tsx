@@ -8,6 +8,9 @@ export default function LogPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [sodium, setSodium] = useState("");
+  const [vitaminD, setVitaminD] = useState("");
+  const [calcium, setCalcium] = useState("");
+  const [magnesium, setMagnesium] = useState("");
   const [scanFile, setScanFile] = useState<string | null>(null);
   const [scanName, setScanName] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -22,14 +25,20 @@ export default function LogPage() {
   }
 
   function handleSubmit() {
-    if (!sodium) return;
+    if (!sodium || !vitaminD || !calcium || !magnesium) return;
     setSubmitting(true);
-    const payload = { sodium: Number(sodium), hasScan: !!scanFile };
+    const payload = {
+      sodium: Number(sodium),
+      vitaminD: Number(vitaminD),
+      calcium: Number(calcium),
+      magnesium: Number(magnesium),
+      hasScan: !!scanFile,
+    };
     localStorage.setItem("sans_payload", JSON.stringify(payload));
     setTimeout(() => router.push("/report"), 1200);
   }
 
-  const canSubmit = !!sodium && !submitting;
+  const canSubmit = !!sodium && !!vitaminD && !!calcium && !!magnesium && !submitting;
 
   return (
     <div className="relative min-h-screen">
@@ -53,20 +62,43 @@ export default function LogPage() {
         </div>
 
         <div className="space-y-5 slide-up">
-          <div className="glass-card p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-xl">🧂</span>
-              <h2 className="font-semibold text-white">Sodium Level</h2>
-              <span className="ml-auto text-xs text-slate-500 bg-slate-800 px-2 py-0.5 rounded-full">mmol/L</span>
-            </div>
-            <input
-              type="number"
-              placeholder="e.g. 138"
+          <div className="grid gap-5 sm:grid-cols-2">
+            <MetricCard
+              emoji="🧂"
+              label="Sodium"
+              unit="mg"
+              hint="Recommended max: 2300 mg"
               value={sodium}
-              onChange={(e) => setSodium(e.target.value)}
-              className="w-full bg-slate-800/60 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40 transition-all text-lg"
+              onChange={setSodium}
+              placeholder="e.g. 1800"
             />
-            <p className="text-slate-500 text-xs mt-2">Normal range: 135-145 mmol/L</p>
+            <MetricCard
+              emoji="☀️"
+              label="Vitamin D"
+              unit="mcg"
+              hint="Deficient below 10 mcg"
+              value={vitaminD}
+              onChange={setVitaminD}
+              placeholder="e.g. 15"
+            />
+            <MetricCard
+              emoji="🦴"
+              label="Calcium"
+              unit="mg"
+              hint="Recommended min: 1000 mg"
+              value={calcium}
+              onChange={setCalcium}
+              placeholder="e.g. 1000"
+            />
+            <MetricCard
+              emoji="⚡"
+              label="Magnesium"
+              unit="mg"
+              hint="Recommended min: 310 mg"
+              value={magnesium}
+              onChange={setMagnesium}
+              placeholder="e.g. 320"
+            />
           </div>
 
           <div className="glass-card p-6">
@@ -134,11 +166,41 @@ export default function LogPage() {
               "Analyze Risk →"
             )}
           </button>
-          {!sodium && (
-            <p className="text-center text-amber-500/70 text-xs">Sodium level is required before analysis</p>
+          {!(sodium && vitaminD && calcium && magnesium) && (
+            <p className="text-center text-amber-500/70 text-xs">All health metrics are required before analysis</p>
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+type MetricCardProps = {
+  emoji: string;
+  label: string;
+  unit: string;
+  hint: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+};
+
+function MetricCard({ emoji, label, unit, hint, value, onChange, placeholder }: MetricCardProps) {
+  return (
+    <div className="glass-card p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-xl">{emoji}</span>
+        <h2 className="font-semibold text-white">{label}</h2>
+        <span className="ml-auto text-xs text-slate-500 bg-slate-800 px-2 py-0.5 rounded-full">{unit}</span>
+      </div>
+      <input
+        type="number"
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-slate-800/60 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40 transition-all text-lg"
+      />
+      <p className="text-slate-500 text-xs mt-2">{hint}</p>
     </div>
   );
 }
