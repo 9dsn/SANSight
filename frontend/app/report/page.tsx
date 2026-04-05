@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 type Payload = {
   sodium: number;
   hasScan: boolean;
-  exercises: { type: string; duration: number; intensity: number }[];
 };
 
 type RiskResult = {
@@ -17,30 +16,13 @@ type RiskResult = {
 };
 
 function computeRisk(payload: Payload): RiskResult {
-  let score = 30; // baseline
+  let score = 30;
 
-  // Sodium contribution
   const na = payload.sodium;
-  if (na > 145)      score += 15 + Math.min((na - 145) * 2, 20);
+  if (na > 145) score += 15 + Math.min((na - 145) * 2, 20);
   else if (na < 135) score += 10;
-  else               score -= 5;
+  else score -= 5;
 
-  // Exercise contribution
-  if (payload.exercises.length === 0) {
-    score += 20;
-  } else {
-    const avgIntensity = payload.exercises.reduce((s, e) => s + e.intensity, 0) / payload.exercises.length;
-    const totalMins    = payload.exercises.reduce((s, e) => s + e.duration, 0);
-    const hasResistance = payload.exercises.some((e) => e.type === "Resistance" || e.type === "Mixed");
-
-    if (avgIntensity < 4)  score += 12;
-    if (avgIntensity > 7)  score -= 8;
-    if (totalMins < 20)    score += 8;
-    if (totalMins >= 45)   score -= 6;
-    if (hasResistance)     score -= 8;
-  }
-
-  // Retinal scan bonus
   if (payload.hasScan) score -= 5;
 
   score = Math.max(5, Math.min(98, score));
@@ -50,50 +32,23 @@ function computeRisk(payload: Payload): RiskResult {
 
   const factors: RiskResult["factors"] = [];
 
-  if (na > 145)
+  if (na > 145) {
     factors.push({ label: `High sodium (${na} mmol/L)`, impact: "high", positive: false });
-  else if (na >= 135 && na <= 145)
+  } else if (na >= 135 && na <= 145) {
     factors.push({ label: `Normal sodium (${na} mmol/L)`, impact: "medium", positive: true });
-  else
-    factors.push({ label: `Low sodium (${na} mmol/L)`, impact: "medium", positive: false });
-
-  if (payload.exercises.length === 0) {
-    factors.push({ label: "No exercise logged", impact: "high", positive: false });
   } else {
-    const avgI = payload.exercises.reduce((s, e) => s + e.intensity, 0) / payload.exercises.length;
-    const totalM = payload.exercises.reduce((s, e) => s + e.duration, 0);
-    factors.push({
-      label: `Avg intensity ${avgI.toFixed(1)}/10`,
-      impact: avgI < 4 ? "high" : "medium",
-      positive: avgI >= 5,
-    });
-    factors.push({
-      label: `${totalM} min total exercise`,
-      impact: totalM < 20 ? "medium" : "low",
-      positive: totalM >= 30,
-    });
-    const hasR = payload.exercises.some((e) => e.type === "Resistance" || e.type === "Mixed");
-    factors.push({ label: hasR ? "Includes resistance training" : "No resistance training", impact: "medium", positive: hasR });
+    factors.push({ label: `Low sodium (${na} mmol/L)`, impact: "medium", positive: false });
   }
 
-  if (payload.hasScan)
+  if (payload.hasScan) {
     factors.push({ label: "Retinal scan provided", impact: "low", positive: true });
+  }
 
   const recommendations: string[] = [];
-  if (na > 145)   recommendations.push("Reduce dietary sodium intake. Target 135–145 mmol/L.");
-  if (na < 135)   recommendations.push("Monitor sodium levels. Consider electrolyte supplementation.");
-  if (payload.exercises.length === 0)
-    recommendations.push("Begin a structured exercise program with at least 3 sessions/week.");
-  else {
-    const avgI = payload.exercises.reduce((s, e) => s + e.intensity, 0) / payload.exercises.length;
-    const hasR = payload.exercises.some((e) => e.type === "Resistance" || e.type === "Mixed");
-    if (avgI < 5) recommendations.push("Increase exercise intensity to moderate level (5–7/10).");
-    if (!hasR)    recommendations.push("Incorporate resistance training — it helps reduce intracranial pressure shifts.");
-  }
-  if (!payload.hasScan)
-    recommendations.push("Schedule a retinal / OCT scan for baseline ocular health data.");
-  if (level === "High")
-    recommendations.push("Consult a flight surgeon for comprehensive SANS screening protocol.");
+  if (na > 145) recommendations.push("Reduce dietary sodium intake. Target 135-145 mmol/L.");
+  if (na < 135) recommendations.push("Monitor sodium levels. Consider electrolyte supplementation.");
+  if (!payload.hasScan) recommendations.push("Schedule a retinal / OCT scan for baseline ocular health data.");
+  if (level === "High") recommendations.push("Consult a flight surgeon for comprehensive SANS screening protocol.");
 
   return { score, level, factors, recommendations };
 }
@@ -108,13 +63,13 @@ export default function ReportPage() {
     const raw = localStorage.getItem("sans_payload");
     const payload: Payload = raw
       ? JSON.parse(raw)
-      : { sodium: 142, hasScan: false, exercises: [] };
+      : { sodium: 142, hasScan: false };
 
     setTimeout(() => {
       const r = computeRisk(payload);
       setResult(r);
       setReady(true);
-      // Animate score count-up
+
       let current = 0;
       const step = r.score / 40;
       const interval = setInterval(() => {
@@ -137,21 +92,17 @@ export default function ReportPage() {
     );
   }
 
-  const { score, level, factors, recommendations } = result;
+  const { level, factors, recommendations } = result;
   const levelColor = level === "Low" ? "#22c55e" : level === "Moderate" ? "#f59e0b" : "#ef4444";
-  const levelBg    = level === "Low" ? "rgba(34,197,94,0.1)" : level === "Moderate" ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)";
+  const levelBg = level === "Low" ? "rgba(34,197,94,0.1)" : level === "Moderate" ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)";
 
-  // SVG ring
   const R = 70;
   const CIRC = 2 * Math.PI * R;
-  const dash = (score / 100) * CIRC;
 
   return (
     <div className="relative min-h-screen">
       <div className="starfield" />
       <div className="relative z-10 max-w-2xl mx-auto px-4 py-8">
-
-        {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <button
             onClick={() => router.push("/log")}
@@ -168,18 +119,16 @@ export default function ReportPage() {
           </div>
         </div>
 
-        {/* Score card */}
         <div className="glass-card p-8 mb-5 slide-up flex flex-col items-center">
           <p className="text-slate-400 text-sm mb-6 uppercase tracking-widest font-medium">SANS Risk Score</p>
 
-          {/* Ring gauge */}
           <div className="relative w-44 h-44 mb-6">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 160 160">
-              {/* Track */}
               <circle cx="80" cy="80" r={R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="12" />
-              {/* Score arc */}
               <circle
-                cx="80" cy="80" r={R}
+                cx="80"
+                cy="80"
+                r={R}
                 fill="none"
                 stroke={levelColor}
                 strokeWidth="12"
@@ -194,7 +143,6 @@ export default function ReportPage() {
             </div>
           </div>
 
-          {/* Level badge */}
           <div
             className="px-6 py-2 rounded-full text-lg font-semibold mb-3"
             style={{ background: levelBg, color: levelColor, border: `1px solid ${levelColor}44` }}
@@ -204,7 +152,7 @@ export default function ReportPage() {
 
           <p className="text-slate-400 text-sm text-center max-w-sm leading-relaxed">
             {level === "Low" &&
-              "Your current metrics indicate low SANS risk. Maintain your exercise and dietary habits."}
+              "Your current metrics indicate low SANS risk. Maintain your current health and dietary habits."}
             {level === "Moderate" &&
               "Moderate risk detected. Consider the recommendations below to reduce risk factors."}
             {level === "High" &&
@@ -212,7 +160,6 @@ export default function ReportPage() {
           </p>
         </div>
 
-        {/* Contributing factors */}
         <div className="glass-card p-6 mb-5 slide-up" style={{ animationDelay: "0.1s" }}>
           <h2 className="font-semibold text-white mb-4 flex items-center gap-2">
             <span>📊</span> Contributing Factors
@@ -251,7 +198,6 @@ export default function ReportPage() {
           </div>
         </div>
 
-        {/* Recommendations */}
         {recommendations.length > 0 && (
           <div className="glass-card p-6 mb-5 slide-up" style={{ animationDelay: "0.2s" }}>
             <h2 className="font-semibold text-white mb-4 flex items-center gap-2">
@@ -270,7 +216,6 @@ export default function ReportPage() {
           </div>
         )}
 
-        {/* Disclaimer */}
         <div
           className="rounded-xl px-5 py-4 mb-6 text-xs text-slate-500 leading-relaxed border"
           style={{ background: "rgba(245,158,11,0.04)", borderColor: "rgba(245,158,11,0.15)" }}
@@ -280,7 +225,6 @@ export default function ReportPage() {
           aerospace medicine physician for any health concerns.
         </div>
 
-        {/* CTA */}
         <div className="flex gap-3">
           <button
             onClick={() => router.push("/log")}
@@ -304,7 +248,7 @@ export default function ReportPage() {
 }
 
 function impactColor(impact: string, positive: boolean) {
-  if (impact === "high")   return positive ? "#22c55e" : "#ef4444";
+  if (impact === "high") return positive ? "#22c55e" : "#ef4444";
   if (impact === "medium") return positive ? "#86efac" : "#f59e0b";
   return "#64748b";
 }

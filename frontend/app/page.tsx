@@ -23,7 +23,7 @@ export default function LoginPage() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-white">SANSight</h1>
           <p className="text-slate-400 mt-2 text-center text-sm leading-relaxed max-w-xs">
-            AI-powered early detection for Spaceflight-Associated Neuro-ocular Syndrome
+            AI-powered health metrics screening for Spaceflight-Associated Neuro-ocular Syndrome
           </p>
         </div>
 
