@@ -67,6 +67,13 @@ body {
 }
 .fade-in { animation: fade-in 0.6s ease-out forwards; }
 
+@keyframes panel-bloom {
+  0% { opacity: 0; transform: translateY(-18px) scale(0.96); }
+  70% { opacity: 1; transform: translateY(3px) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.panel-bloom { animation: panel-bloom 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
@@ -78,3 +85,88 @@ body {
   50%       { opacity: 1;   transform: scale(1.02); }
 }
 .pulse-ring { animation: pulse-ring 2.5s ease-in-out infinite; }
+
+@keyframes planet-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+.planet-float { animation: planet-float 4s ease-in-out infinite; }
+
+@keyframes orbit-drift-slow {
+  0%, 100% { transform: translate(-50%, -50%) rotate(0deg) scale(1); opacity: 0.9; }
+  50% { transform: translate(-50%, -50%) rotate(3deg) scale(1.015); opacity: 1; }
+}
+.orbit-drift-slow { animation: orbit-drift-slow 18s ease-in-out infinite; }
+
+@keyframes orbit-drift-reverse {
+  0%, 100% { transform: translate(-50%, -50%) rotate(0deg) scale(1); opacity: 0.82; }
+  50% { transform: translate(-50%, -50%) rotate(-2.5deg) scale(0.99); opacity: 0.96; }
+}
+.orbit-drift-reverse { animation: orbit-drift-reverse 16s ease-in-out infinite; }
+
+@keyframes central-glow-pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.92; }
+  50% { transform: translate(-50%, -50%) scale(1.035); opacity: 1; }
+}
+.central-glow-pulse { animation: central-glow-pulse 8s ease-in-out infinite; }
+
+@keyframes planet-orbit-float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -6px, 0); }
+}
+.planet-orbit-float { animation: planet-orbit-float 5.5s ease-in-out infinite; }
+
+@keyframes orbit-rotate {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+.orbit-rotate {
+  animation-name: orbit-rotate;
+  animation-duration: var(--orbit-duration, 20s);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+@keyframes rocket-launch {
+  0% { opacity: 0; transform: translate(-14px, 18px) scale(0.72) rotate(-28deg); }
+  12% { opacity: 1; }
+  55% { opacity: 1; transform: translate(6px, -58px) scale(0.94) rotate(-8deg); }
+  100% { opacity: 0; transform: translate(30px, -120px) scale(1.08) rotate(8deg); }
+}
+.rocket-launch { animation: rocket-launch 0.95s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
+@keyframes rocket-flame {
+  0%, 100% { transform: scaleY(0.85); opacity: 0.7; }
+  50% { transform: scaleY(1.18); opacity: 1; }
+}
+.rocket-flame { animation: rocket-flame 0.18s ease-in-out infinite; transform-origin: top center; }
+
+@keyframes rocket-shake {
+  0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
+  25% { transform: translate(-1px, 1px) rotate(-1.2deg); }
+  50% { transform: translate(1px, -1px) rotate(1.2deg); }
+  75% { transform: translate(-1px, 0px) rotate(-0.8deg); }
+}
+.rocket-shake { animation: rocket-shake 0.14s linear infinite; }
+
+@keyframes exhaust-trail {
+  0% { opacity: 0.85; transform: scaleY(0.75) scaleX(0.9); }
+  100% { opacity: 0; transform: scaleY(1.5) scaleX(1.2); }
+}
+.exhaust-trail { animation: exhaust-trail 0.45s ease-out infinite; transform-origin: top center; }
+
+@keyframes landing-burn {
+  0% { opacity: 0; transform: scaleY(0.5) scaleX(0.7); }
+  20% { opacity: 0.95; transform: scaleY(1.2) scaleX(1.05); }
+  100% { opacity: 0; transform: scaleY(1.7) scaleX(1.2); }
+}
+.landing-burn { animation: landing-burn 0.38s ease-out forwards; transform-origin: top center; }
+
+@keyframes landing-dust {
+  0% { opacity: 0; transform: scale(0.3); }
+  25% { opacity: 0.5; }
+  100% { opacity: 0; transform: scale(1.35); }
+}
+.landing-dust { animation: landing-dust 0.55s ease-out forwards; }
