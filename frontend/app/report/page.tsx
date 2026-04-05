@@ -5,6 +5,9 @@ import { useEffect, useState } from "react";
 
 type Payload = {
   sodium: number;
+  vitaminD: number;
+  calcium: number;
+  magnesium: number;
   hasScan: boolean;
 };
 
@@ -18,10 +21,22 @@ type RiskResult = {
 function computeRisk(payload: Payload): RiskResult {
   let score = 30;
 
-  const na = payload.sodium;
-  if (na > 145) score += 15 + Math.min((na - 145) * 2, 20);
-  else if (na < 135) score += 10;
-  else score -= 5;
+  const sodium = payload.sodium;
+  const vitaminD = payload.vitaminD;
+  const calcium = payload.calcium;
+  const magnesium = payload.magnesium;
+
+  if (sodium > 2300) score += 18 + Math.min(((sodium - 2300) / 100) * 1.5, 12);
+  else score -= 4;
+
+  if (vitaminD < 10) score += 16;
+  else score -= 3;
+
+  if (calcium < 1000) score += 10;
+  else score -= 2;
+
+  if (magnesium < 310) score += 8;
+  else score -= 2;
 
   if (payload.hasScan) score -= 5;
 
@@ -32,12 +47,28 @@ function computeRisk(payload: Payload): RiskResult {
 
   const factors: RiskResult["factors"] = [];
 
-  if (na > 145) {
-    factors.push({ label: `High sodium (${na} mmol/L)`, impact: "high", positive: false });
-  } else if (na >= 135 && na <= 145) {
-    factors.push({ label: `Normal sodium (${na} mmol/L)`, impact: "medium", positive: true });
+  if (sodium > 2300) {
+    factors.push({ label: `High sodium intake (${sodium} mg)`, impact: "high", positive: false });
   } else {
-    factors.push({ label: `Low sodium (${na} mmol/L)`, impact: "medium", positive: false });
+    factors.push({ label: `Sodium within target (${sodium} mg)`, impact: "medium", positive: true });
+  }
+
+  if (vitaminD < 10) {
+    factors.push({ label: `Vitamin D deficient (${vitaminD} mcg)`, impact: "high", positive: false });
+  } else {
+    factors.push({ label: `Vitamin D above deficiency threshold (${vitaminD} mcg)`, impact: "medium", positive: true });
+  }
+
+  if (calcium < 1000) {
+    factors.push({ label: `Calcium below target (${calcium} mg)`, impact: "medium", positive: false });
+  } else {
+    factors.push({ label: `Calcium meets target (${calcium} mg)`, impact: "low", positive: true });
+  }
+
+  if (magnesium < 310) {
+    factors.push({ label: `Magnesium below target (${magnesium} mg)`, impact: "medium", positive: false });
+  } else {
+    factors.push({ label: `Magnesium meets target (${magnesium} mg)`, impact: "low", positive: true });
   }
 
   if (payload.hasScan) {
@@ -45,8 +76,10 @@ function computeRisk(payload: Payload): RiskResult {
   }
 
   const recommendations: string[] = [];
-  if (na > 145) recommendations.push("Reduce dietary sodium intake. Target 135-145 mmol/L.");
-  if (na < 135) recommendations.push("Monitor sodium levels. Consider electrolyte supplementation.");
+  if (sodium > 2300) recommendations.push("Reduce sodium intake toward the recommended maximum of 2300 mg.");
+  if (vitaminD < 10) recommendations.push("Address vitamin D deficiency and aim to move above 10 mcg.");
+  if (calcium < 1000) recommendations.push("Increase calcium intake toward the recommended minimum of 1000 mg.");
+  if (magnesium < 310) recommendations.push("Increase magnesium intake toward the recommended minimum of 310 mg.");
   if (!payload.hasScan) recommendations.push("Schedule a retinal / OCT scan for baseline ocular health data.");
   if (level === "High") recommendations.push("Consult a flight surgeon for comprehensive SANS screening protocol.");
 
@@ -63,7 +96,7 @@ export default function ReportPage() {
     const raw = localStorage.getItem("sans_payload");
     const payload: Payload = raw
       ? JSON.parse(raw)
-      : { sodium: 142, hasScan: false };
+      : { sodium: 1800, vitaminD: 15, calcium: 1000, magnesium: 320, hasScan: false };
 
     setTimeout(() => {
       const r = computeRisk(payload);
