@@ -5,6 +5,9 @@ import { useEffect, useState } from "react";
 
 type Payload = {
   sodium: number;
+  vitaminD: number;
+  calcium: number;
+  magnesium: number;
   hasScan: boolean;
 };
 
@@ -15,13 +18,30 @@ type RiskResult = {
   recommendations: string[];
 };
 
+type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
 function computeRisk(payload: Payload): RiskResult {
   let score = 30;
 
-  const na = payload.sodium;
-  if (na > 145) score += 15 + Math.min((na - 145) * 2, 20);
-  else if (na < 135) score += 10;
-  else score -= 5;
+  const sodium = payload.sodium;
+  const vitaminD = payload.vitaminD;
+  const calcium = payload.calcium;
+  const magnesium = payload.magnesium;
+
+  if (sodium > 2300) score += 18 + Math.min(((sodium - 2300) / 100) * 1.5, 12);
+  else score -= 4;
+
+  if (vitaminD < 10) score += 16;
+  else score -= 3;
+
+  if (calcium < 1000) score += 10;
+  else score -= 2;
+
+  if (magnesium < 310) score += 8;
+  else score -= 2;
 
   if (payload.hasScan) score -= 5;
 
@@ -32,12 +52,28 @@ function computeRisk(payload: Payload): RiskResult {
 
   const factors: RiskResult["factors"] = [];
 
-  if (na > 145) {
-    factors.push({ label: `High sodium (${na} mmol/L)`, impact: "high", positive: false });
-  } else if (na >= 135 && na <= 145) {
-    factors.push({ label: `Normal sodium (${na} mmol/L)`, impact: "medium", positive: true });
+  if (sodium > 2300) {
+    factors.push({ label: `High sodium intake (${sodium} mg)`, impact: "high", positive: false });
   } else {
-    factors.push({ label: `Low sodium (${na} mmol/L)`, impact: "medium", positive: false });
+    factors.push({ label: `Sodium within target (${sodium} mg)`, impact: "medium", positive: true });
+  }
+
+  if (vitaminD < 10) {
+    factors.push({ label: `Vitamin D deficient (${vitaminD} mcg)`, impact: "high", positive: false });
+  } else {
+    factors.push({ label: `Vitamin D above deficiency threshold (${vitaminD} mcg)`, impact: "medium", positive: true });
+  }
+
+  if (calcium < 1000) {
+    factors.push({ label: `Calcium below target (${calcium} mg)`, impact: "medium", positive: false });
+  } else {
+    factors.push({ label: `Calcium meets target (${calcium} mg)`, impact: "low", positive: true });
+  }
+
+  if (magnesium < 310) {
+    factors.push({ label: `Magnesium below target (${magnesium} mg)`, impact: "medium", positive: false });
+  } else {
+    factors.push({ label: `Magnesium meets target (${magnesium} mg)`, impact: "low", positive: true });
   }
 
   if (payload.hasScan) {
@@ -45,8 +81,10 @@ function computeRisk(payload: Payload): RiskResult {
   }
 
   const recommendations: string[] = [];
-  if (na > 145) recommendations.push("Reduce dietary sodium intake. Target 135-145 mmol/L.");
-  if (na < 135) recommendations.push("Monitor sodium levels. Consider electrolyte supplementation.");
+  if (sodium > 2300) recommendations.push("Reduce sodium intake toward the recommended maximum of 2300 mg.");
+  if (vitaminD < 10) recommendations.push("Address vitamin D deficiency and aim to move above 10 mcg.");
+  if (calcium < 1000) recommendations.push("Increase calcium intake toward the recommended minimum of 1000 mg.");
+  if (magnesium < 310) recommendations.push("Increase magnesium intake toward the recommended minimum of 310 mg.");
   if (!payload.hasScan) recommendations.push("Schedule a retinal / OCT scan for baseline ocular health data.");
   if (level === "High") recommendations.push("Consult a flight surgeon for comprehensive SANS screening protocol.");
 
@@ -55,18 +93,78 @@ function computeRisk(payload: Payload): RiskResult {
 
 export default function ReportPage() {
   const router = useRouter();
+  const [payload, setPayload] = useState<Payload | null>(null);
   const [result, setResult] = useState<RiskResult | null>(null);
   const [animScore, setAnimScore] = useState(0);
   const [ready, setReady] = useState(false);
+  const [question, setQuestion] = useState("");
+  const [chat, setChat] = useState<ChatMessage[]>([]);
+  const [assistantLoading, setAssistantLoading] = useState(false);
+  const [assistantError, setAssistantError] = useState<string | null>(null);
+
+  async function askAboutReport(nextQuestion: string) {
+    if (!payload || !result) return;
+
+    const trimmed = nextQuestion.trim();
+    if (!trimmed) return;
+
+    setAssistantError(null);
+    setAssistantLoading(true);
+    setChat((prev) => [...prev, { role: "user", content: trimmed }]);
+    setQuestion("");
+
+    try {
+      const response = await fetch("/api/report-assistant", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          question: trimmed,
+          payload,
+          report: result,
+        }),
+      });
+
+      const data = (await response.json()) as { answer?: string; error?: string };
+
+      if (!response.ok) {
+        throw new Error(data.error || "Unable to reach the report assistant.");
+      }
+
+      setChat((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content:
+            data.answer ||
+            "I can explain the report, but I could not generate an answer this time.",
+        },
+      ]);
+    } catch (error) {
+      setAssistantError(error instanceof Error ? error.message : "Unable to reach the report assistant.");
+      setChat((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content:
+            "I can explain the report, but the assistant is unavailable right now. Please try again in a moment.",
+        },
+      ]);
+    } finally {
+      setAssistantLoading(false);
+    }
+  }
 
   useEffect(() => {
     const raw = localStorage.getItem("sans_payload");
-    const payload: Payload = raw
+    const nextPayload: Payload = raw
       ? JSON.parse(raw)
-      : { sodium: 142, hasScan: false };
+      : { sodium: 1800, vitaminD: 15, calcium: 1000, magnesium: 320, hasScan: false };
+    setPayload(nextPayload);
 
     setTimeout(() => {
-      const r = computeRisk(payload);
+      const r = computeRisk(nextPayload);
       setResult(r);
       setReady(true);
 
@@ -91,6 +189,13 @@ export default function ReportPage() {
       </div>
     );
   }
+
+  const starterQuestions = [
+    "Why is my score this high?",
+    "Which metric had the biggest effect?",
+    "What should I improve first?",
+    "Explain my vitamin D result.",
+  ];
 
   const { level, factors, recommendations } = result;
   const levelColor = level === "Low" ? "#22c55e" : level === "Moderate" ? "#f59e0b" : "#ef4444";
@@ -215,6 +320,90 @@ export default function ReportPage() {
             </ul>
           </div>
         )}
+
+        <div className="glass-card p-6 mb-5 slide-up" style={{ animationDelay: "0.25s" }}>
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <h2 className="font-semibold text-white flex items-center gap-2">
+                <span>🧠</span> Ask About This Report
+              </h2>
+              <p className="text-slate-400 text-sm mt-1">
+                This assistant can explain the report in plain language, but it does not diagnose, prescribe, or give emergency medical advice.
+              </p>
+            </div>
+            <span className="text-[11px] text-cyan-200 bg-cyan-400/10 border border-cyan-300/20 px-2.5 py-1 rounded-full">
+              Educational only
+            </span>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-4">
+            {starterQuestions.map((starter) => (
+              <button
+                key={starter}
+                onClick={() => void askAboutReport(starter)}
+                disabled={assistantLoading}
+                className="rounded-full border border-slate-700/60 bg-slate-900/50 px-3 py-1.5 text-xs text-slate-300 hover:border-indigo-500/50 hover:text-white transition-all disabled:opacity-50"
+              >
+                {starter}
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-3 mb-4">
+            {chat.length === 0 && (
+              <div className="rounded-2xl border border-slate-700/50 bg-slate-950/45 px-4 py-4 text-sm text-slate-400">
+                Ask why a metric changed your score, which factor mattered most, or what this prototype is trying to signal.
+              </div>
+            )}
+
+            {chat.map((message, index) => (
+              <div
+                key={`${message.role}-${index}`}
+                className={`rounded-2xl px-4 py-3 text-sm leading-6 ${
+                  message.role === "user"
+                    ? "ml-auto max-w-[85%] border border-indigo-500/30 bg-indigo-500/10 text-indigo-100"
+                    : "max-w-[90%] border border-slate-700/50 bg-slate-950/50 text-slate-300"
+                }`}
+              >
+                {message.content}
+              </div>
+            ))}
+
+            {assistantLoading && (
+              <div className="max-w-[90%] rounded-2xl border border-slate-700/50 bg-slate-950/50 px-4 py-3 text-sm text-slate-400">
+                Thinking through your report...
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={question}
+              onChange={(event) => setQuestion(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                  event.preventDefault();
+                  void askAboutReport(question);
+                }
+              }}
+              placeholder="Ask a question about this report"
+              className="flex-1 rounded-xl border border-slate-700/60 bg-slate-950/60 px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40"
+            />
+            <button
+              onClick={() => void askAboutReport(question)}
+              disabled={assistantLoading || !question.trim()}
+              className="rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{
+                background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
+              }}
+            >
+              Ask
+            </button>
+          </div>
+
+          {assistantError && <p className="mt-3 text-xs text-amber-400">{assistantError}</p>}
+        </div>
 
         <div
           className="rounded-xl px-5 py-4 mb-6 text-xs text-slate-500 leading-relaxed border"
