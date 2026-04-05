@@ -2,7 +2,7 @@
 
 **An AI-powered health monitoring system that detects early warning signs of SANS in astronauts.**
 
-> Built at Catapult · April 2025
+> Built at Catapult · April 2025 - **Best Use Of Hardware Winner**
 
 ---
 
