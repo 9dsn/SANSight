@@ -52,6 +52,7 @@ User Input (retinal scan + biometrics)
 | CNN | Retinal scan image | Detects structural eye changes associated with SANS |
 | Random Forest | Vitamins and Sodium | Identifies biometric risk patterns |
 | Weighted Average Fusion | Both scores | Combines into a single interpretable risk percentage |
+| Groq LLM | chat prompts | answers questions about risk score |
 
 > The CNN uses **transfer learning** from ImageNet weights, fine-tuned on retinal disease datasets. The tabular model is trained on NASA astronaut health and nutrition data.
 
@@ -77,6 +78,7 @@ User Input (retinal scan + biometrics)
 | ML – Tabular | Random Forest |
 | ML – Vision | CNN |
 | ML Training | TensorFlow |
+| LLM Chat | Groq |
 | Authentication | [World ID](https://docs.world.org/world-id/overview) |
 | Data Processing | pandas, NumPy |
 
@@ -84,11 +86,12 @@ User Input (retinal scan + biometrics)
 
 ## Features
 
-- 🔐 **World ID Login** — privacy-preserving authentication using World ID
-- 📤 **Retinal Scan Upload** — user submits an eye scan for AI analysis
-- 📋 **Manual Biometric Input** — log sodium intake and vitamin levels
-- 📊 **Risk Dashboard** — visual risk score with breakdown of contributing factors
-- 📈 **Trend Tracking** — monitor risk changes over time
+- **World ID Login** — privacy-preserving authentication using World ID
+- **Retinal Scan Upload** — user submits an eye scan for AI analysis
+- **Manual Biometric Input** — log sodium intake and vitamin levels
+- **Risk Dashboard** — visual risk score with breakdown of contributing factors
+- **Trend Tracking** — monitor risk changes over time
+- **Chat AI** - ask any questions about risk score
 
 ---
 
