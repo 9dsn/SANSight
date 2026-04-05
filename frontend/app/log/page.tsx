@@ -25,7 +25,7 @@ export default function LogPage() {
   }
 
   function handleSubmit() {
-    if (!sodium || !vitaminD || !calcium || !magnesium) return;
+    if (!scanFile && (!sodium || !vitaminD || !calcium || !magnesium)) return;
     setSubmitting(true);
     const payload = {
       sodium: Number(sodium),
@@ -38,7 +38,9 @@ export default function LogPage() {
     setTimeout(() => router.push("/report"), 1200);
   }
 
-  const canSubmit = !!sodium && !!vitaminD && !!calcium && !!magnesium && !submitting;
+  const hasNutrition = !!sodium && !!vitaminD && !!calcium && !!magnesium;
+  const hasScan = !!scanFile;
+  const canSubmit = (hasNutrition || hasScan) && !submitting;
 
   return (
     <div className="relative min-h-screen">
@@ -81,8 +83,7 @@ export default function LogPage() {
             <div className="border-b border-indigo-300/10 bg-slate-950/35 px-6 py-5 sm:px-8">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-indigo-100/80">Core Metrics</p>
               <p className="mt-2 text-base text-slate-300">
-                Add the four required values below. Larger labels and guidance make it easier to review before you
-                submit.
+                Add the four nutrition values below, or upload a retinal scan — at least one is required.
               </p>
             </div>
 
@@ -133,12 +134,9 @@ export default function LogPage() {
                 <div>
                   <h2 className="text-2xl font-semibold text-white">Retinal Scan</h2>
                   <p className="mt-1 text-sm leading-6 text-slate-300">
-                    Upload an OCT or retinal image if available. This is optional, but it gives the report more context.
+                    Upload an OCT or retinal image if available. It gives the report more context.
                   </p>
                 </div>
-                <span className="ml-auto rounded-full border border-indigo-300/15 bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-100">
-                  Optional
-                </span>
               </div>
 
               {scanFile ? (
@@ -224,9 +222,9 @@ export default function LogPage() {
               "Generate Risk Report"
             )}
           </button>
-          {!(sodium && vitaminD && calcium && magnesium) && (
+          {!canSubmit && !submitting && (
             <p className="text-center text-sm text-indigo-100/70">
-              Complete all four health metrics before generating the report.
+              Upload a retinal scan or complete all four health metrics to generate the report.
             </p>
           )}
         </div>
