@@ -44,113 +44,171 @@ export default function LogPage() {
     <div className="relative min-h-screen">
       <div className="starfield" />
 
-      <div className="relative z-10 max-w-2xl mx-auto px-4 py-8">
-        <div className="flex items-center gap-3 mb-8">
+      <div className="relative z-10 mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-8 flex items-start gap-4">
           <button
             onClick={() => router.push("/")}
-            className="p-2 rounded-lg bg-slate-800/60 border border-slate-700/50 text-slate-400 hover:text-white transition-colors"
+            className="mt-1 rounded-xl border border-indigo-400/20 bg-slate-950/70 p-3 text-slate-300 transition-colors hover:text-white"
           >
             <ArrowLeftIcon />
           </button>
-          <div>
-            <h1 className="text-xl font-bold text-white">Log Health Data</h1>
-            <p className="text-slate-500 text-sm">Enter today&apos;s metrics for risk analysis</p>
-          </div>
-          <div className="ml-auto">
-            <StepsIndicator step={2} />
+          <div className="flex-1">
+            <div className="mb-4 inline-flex rounded-full border border-indigo-300/15 bg-indigo-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.24em] text-indigo-100">
+              Health Intake
+            </div>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-3xl">
+                <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                  Log Health Data
+                </h1>
+                <p className="mt-3 text-base leading-7 text-slate-300 sm:text-lg">
+                  Enter your current nutrition and scan information so SANSight can generate a clearer, easier-to-read
+                  risk report.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-indigo-300/12 bg-slate-950/55 px-4 py-4">
+                <p className="text-xs font-medium uppercase tracking-[0.22em] text-indigo-100/80">Progress</p>
+                <div className="mt-3">
+                  <StepsIndicator step={2} />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
         <div className="space-y-5 slide-up">
-          <div className="grid gap-5 sm:grid-cols-2">
-            <MetricCard
-              emoji="🧂"
-              label="Sodium"
-              unit="mg"
-              hint="Recommended max: 2300 mg"
-              value={sodium}
-              onChange={setSodium}
-              placeholder="e.g. 1800"
-            />
-            <MetricCard
-              emoji="☀️"
-              label="Vitamin D"
-              unit="mcg"
-              hint="Deficient below 10 mcg"
-              value={vitaminD}
-              onChange={setVitaminD}
-              placeholder="e.g. 15"
-            />
-            <MetricCard
-              emoji="🦴"
-              label="Calcium"
-              unit="mg"
-              hint="Recommended min: 1000 mg"
-              value={calcium}
-              onChange={setCalcium}
-              placeholder="e.g. 1000"
-            />
-            <MetricCard
-              emoji="⚡"
-              label="Magnesium"
-              unit="mg"
-              hint="Recommended min: 310 mg"
-              value={magnesium}
-              onChange={setMagnesium}
-              placeholder="e.g. 320"
-            />
-          </div>
-
-          <div className="glass-card p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-xl">👁️</span>
-              <h2 className="font-semibold text-white">Retinal Scan</h2>
-              <span className="ml-auto text-xs text-indigo-400 bg-indigo-900/30 px-2 py-0.5 rounded-full">Optional</span>
+          <section className="glass-card overflow-hidden">
+            <div className="border-b border-indigo-300/10 bg-slate-950/35 px-6 py-5 sm:px-8">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-indigo-100/80">Core Metrics</p>
+              <p className="mt-2 text-base text-slate-300">
+                Add the four required values below. Larger labels and guidance make it easier to review before you
+                submit.
+              </p>
             </div>
 
-            {scanFile ? (
-              <div className="relative rounded-xl overflow-hidden border border-slate-600/50">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={scanFile} alt="Retinal scan" className="w-full h-40 object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
-                  <span className="text-white text-sm truncate">{scanName}</span>
+            <div className="grid gap-5 p-6 sm:grid-cols-2 sm:p-8">
+              <MetricCard
+                emoji="🧂"
+                label="Sodium Intake"
+                unit="mg"
+                hint="Recommended daily maximum: 2300 mg"
+                value={sodium}
+                onChange={setSodium}
+                placeholder="e.g. 1800"
+              />
+              <MetricCard
+                emoji="☀️"
+                label="Vitamin D"
+                unit="mcg"
+                hint="Below 10 mcg may indicate deficiency"
+                value={vitaminD}
+                onChange={setVitaminD}
+                placeholder="e.g. 15"
+              />
+              <MetricCard
+                emoji="🦴"
+                label="Calcium"
+                unit="mg"
+                hint="Recommended daily minimum: 1000 mg"
+                value={calcium}
+                onChange={setCalcium}
+                placeholder="e.g. 1000"
+              />
+              <MetricCard
+                emoji="⚡"
+                label="Magnesium"
+                unit="mg"
+                hint="Recommended daily minimum: 310 mg"
+                value={magnesium}
+                onChange={setMagnesium}
+                placeholder="e.g. 320"
+              />
+            </div>
+          </section>
+
+          <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="glass-card p-6 sm:p-8">
+              <div className="mb-5 flex items-center gap-3">
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500/15 text-2xl">👁️</span>
+                <div>
+                  <h2 className="text-2xl font-semibold text-white">Retinal Scan</h2>
+                  <p className="mt-1 text-sm leading-6 text-slate-300">
+                    Upload an OCT or retinal image if available. This is optional, but it gives the report more context.
+                  </p>
                 </div>
-                <button
-                  onClick={() => {
-                    setScanFile(null);
-                    setScanName("");
-                  }}
-                  className="absolute top-2 right-2 bg-red-600/80 hover:bg-red-600 text-white rounded-lg p-1.5 transition-colors"
-                >
-                  <XIcon />
-                </button>
+                <span className="ml-auto rounded-full border border-indigo-300/15 bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-100">
+                  Optional
+                </span>
               </div>
-            ) : (
-              <button
-                onClick={() => fileRef.current?.click()}
-                className="w-full py-8 border-2 border-dashed border-slate-600/60 rounded-xl text-slate-400 hover:border-indigo-500/60 hover:text-indigo-400 transition-all flex flex-col items-center gap-2"
-              >
-                <UploadIcon />
-                <span className="text-sm">Upload OCT / retinal image</span>
-                <span className="text-xs text-slate-600">PNG, JPG, DICOM</span>
-              </button>
-            )}
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-            />
+
+              {scanFile ? (
+                <div className="relative overflow-hidden rounded-2xl border border-indigo-300/15">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={scanFile} alt="Retinal scan" className="h-52 w-full object-cover" />
+                  <div className="absolute inset-0 flex items-end bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent p-4">
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-[0.2em] text-indigo-100/70">Uploaded Scan</p>
+                      <span className="mt-1 block text-base font-medium text-white">{scanName}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setScanFile(null);
+                      setScanName("");
+                    }}
+                    className="absolute right-3 top-3 rounded-xl border border-white/15 bg-slate-950/70 p-2 text-white transition-colors hover:bg-slate-900"
+                  >
+                    <XIcon />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => fileRef.current?.click()}
+                  className="flex w-full flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-indigo-300/18 bg-slate-950/35 px-6 py-12 text-slate-300 transition-all hover:border-indigo-400/40 hover:bg-indigo-500/6 hover:text-white"
+                >
+                  <UploadIcon />
+                  <span className="text-lg font-semibold text-white">Upload retinal scan</span>
+                  <span className="max-w-sm text-center text-sm leading-6 text-slate-400">
+                    PNG, JPG, or similar image formats work best for this prototype upload flow.
+                  </span>
+                </button>
+              )}
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </div>
+
+            <aside className="glass-card p-6 sm:p-8">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-indigo-100/80">Review Before Submit</p>
+              <div className="mt-5 space-y-4">
+                <ReviewRow label="Sodium" value={sodium} unit="mg" />
+                <ReviewRow label="Vitamin D" value={vitaminD} unit="mcg" />
+                <ReviewRow label="Calcium" value={calcium} unit="mg" />
+                <ReviewRow label="Magnesium" value={magnesium} unit="mg" />
+                <ReviewRow label="Retinal Scan" value={scanFile ? "Attached" : "Not uploaded"} />
+              </div>
+
+              <div className="mt-6 rounded-2xl border border-indigo-300/10 bg-slate-950/45 px-4 py-4">
+                <p className="text-sm font-medium text-white">Why this matters</p>
+                <p className="mt-2 text-sm leading-6 text-slate-300">
+                  These metrics feed the report summary, recommendations, and the Moon Guide assistant that explains
+                  your results.
+                </p>
+              </div>
+            </aside>
           </div>
 
           <button
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className="w-full py-4 rounded-xl font-semibold text-white transition-all duration-200 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full rounded-2xl py-5 text-lg font-semibold text-white transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
             style={{
               background: canSubmit
-                ? "linear-gradient(135deg, #4f46e5, #7c3aed)"
+                ? "linear-gradient(135deg, #1e3a8a, #4f46e5)"
                 : "rgba(79,70,229,0.3)",
               boxShadow: canSubmit ? "0 0 24px rgba(79,70,229,0.4)" : "none",
             }}
@@ -160,14 +218,16 @@ export default function LogPage() {
                 <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 12a9 9 0 1 1-6.219-8.56" />
                 </svg>
-                Analyzing...
+                Building Your Report...
               </span>
             ) : (
-              "Analyze Risk →"
+              "Generate Risk Report"
             )}
           </button>
           {!(sodium && vitaminD && calcium && magnesium) && (
-            <p className="text-center text-amber-500/70 text-xs">All health metrics are required before analysis</p>
+            <p className="text-center text-sm text-indigo-100/70">
+              Complete all four health metrics before generating the report.
+            </p>
           )}
         </div>
       </div>
@@ -187,20 +247,36 @@ type MetricCardProps = {
 
 function MetricCard({ emoji, label, unit, hint, value, onChange, placeholder }: MetricCardProps) {
   return (
-    <div className="glass-card p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-xl">{emoji}</span>
-        <h2 className="font-semibold text-white">{label}</h2>
-        <span className="ml-auto text-xs text-slate-500 bg-slate-800 px-2 py-0.5 rounded-full">{unit}</span>
+    <div className="rounded-3xl border border-indigo-300/12 bg-slate-950/45 p-6 shadow-[0_12px_30px_rgba(2,6,23,0.16)]">
+      <div className="mb-5 flex items-start gap-3">
+        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500/12 text-2xl">{emoji}</span>
+        <div className="min-w-0">
+          <h2 className="text-xl font-semibold text-white sm:text-2xl">{label}</h2>
+          <p className="mt-1 text-sm leading-6 text-slate-300">{hint}</p>
+        </div>
+        <span className="ml-auto rounded-full border border-indigo-300/12 bg-indigo-500/10 px-3 py-1 text-sm font-medium text-indigo-100">
+          {unit}
+        </span>
       </div>
       <input
         type="number"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-slate-800/60 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/40 transition-all text-lg"
+        className="w-full rounded-2xl border border-indigo-300/12 bg-slate-900/70 px-5 py-4 text-xl font-medium text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/25 transition-all"
       />
-      <p className="text-slate-500 text-xs mt-2">{hint}</p>
+      <p className="mt-3 text-sm leading-6 text-slate-300">{hint}</p>
+    </div>
+  );
+}
+
+function ReviewRow({ label, value, unit }: { label: string; value: string; unit?: string }) {
+  return (
+    <div className="flex items-center justify-between rounded-2xl border border-indigo-300/10 bg-slate-950/45 px-4 py-4">
+      <span className="text-base font-medium text-white">{label}</span>
+      <span className="text-base text-slate-300">
+        {value ? `${value}${unit ? ` ${unit}` : ""}` : "Pending"}
+      </span>
     </div>
   );
 }

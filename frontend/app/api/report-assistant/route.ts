@@ -21,6 +21,16 @@ type AssistantRequest = {
   report: ReportResult;
 };
 
+type ResponsesApiOutput = {
+  content?: Array<
+    | {
+        type?: string;
+        text?: string;
+      }
+    | undefined
+  >;
+};
+
 const HIGH_RISK_PATTERNS = [
   /\b(do i have|diagnose|diagnosis|am i suffering from)\b/i,
   /\bwhat medication\b/i,
@@ -63,14 +73,40 @@ function isHighRiskQuestion(question: string) {
   return HIGH_RISK_PATTERNS.some((pattern) => pattern.test(question));
 }
 
+function extractResponseText(data: {
+  output_text?: string;
+  output?: ResponsesApiOutput[];
+}) {
+  if (typeof data.output_text === "string" && data.output_text.trim()) {
+    return data.output_text.trim();
+  }
+
+  const text = data.output
+    ?.flatMap((item) => item.content ?? [])
+    .filter((item): item is { type?: string; text?: string } => Boolean(item))
+    .filter((item) => item.type === "output_text" && typeof item.text === "string")
+    .map((item) => item.text?.trim())
+    .filter((item): item is string => Boolean(item))
+    .join("\n\n");
+
+  return text?.trim();
+}
+
 export async function POST(request: Request) {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY;
+  const baseUrl = process.env.GROQ_API_KEY
+    ? "https://api.groq.com/openai/v1"
+    : "https://api.openai.com/v1";
+  const model = process.env.GROQ_API_KEY
+    ? process.env.GROQ_MODEL || "llama-3.3-70b-versatile"
+    : process.env.OPENAI_MODEL || "gpt-4.1-mini";
+  const providerName = process.env.GROQ_API_KEY ? "Groq" : "OpenAI";
 
   if (!apiKey) {
     return NextResponse.json(
       {
         answer:
-          "The report assistant is not configured yet. Add OPENAI_API_KEY on the server to enable educational report Q&A.",
+          "The report assistant is not configured yet. Add GROQ_API_KEY or OPENAI_API_KEY on the server to enable educational report Q&A.",
       },
       { status: 503 },
     );
@@ -101,8 +137,6 @@ export async function POST(request: Request) {
     });
   }
 
-  const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
-
   const systemPrompt = [
     "You are SANSight's report explanation assistant.",
     "You only explain the report already shown to the user.",
@@ -130,7 +164,7 @@ export async function POST(request: Request) {
     2,
   );
 
-  const response = await fetch("https://api.openai.com/v1/responses", {
+  const response = await fetch(`${baseUrl}/responses`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -158,7 +192,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
-        error: "OpenAI request failed.",
+        error: `${providerName} request failed.`,
         detail: errorText.slice(0, 500),
       },
       { status: 502 },
@@ -167,11 +201,12 @@ export async function POST(request: Request) {
 
   const data = (await response.json()) as {
     output_text?: string;
+    output?: ResponsesApiOutput[];
   };
 
   return NextResponse.json({
     answer:
-      data.output_text?.trim() ||
+      extractResponseText(data) ||
       "I can explain the report, but I could not generate an answer this time. Please try rephrasing your question.",
   });
 }
