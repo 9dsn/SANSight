@@ -2,12 +2,18 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { IDKitWidget, VerificationLevel, ISuccessResult } from "@worldcoin/idkit";
 
 export default function LoginPage() {
   const router = useRouter();
   const [verified, setVerified] = useState(false);
 
-  const handleDirectLogin = () => {
+  const handleVerify = async (proof: ISuccessResult) => {
+    // For hackathon demo — accept all proofs without backend verification
+    console.log("World ID proof:", proof);
+  };
+
+  const onSuccess = () => {
     setVerified(true);
     setTimeout(() => router.push("/log"), 800);
   };
@@ -23,7 +29,7 @@ export default function LoginPage() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-white">SANSight</h1>
           <p className="text-slate-400 mt-2 text-center text-sm leading-relaxed max-w-xs">
-            AI-powered health metrics screening for Spaceflight-Associated Neuro-ocular Syndrome
+            AI-powered early detection for Spaceflight-Associated Neuro-ocular Syndrome
           </p>
         </div>
 
@@ -33,31 +39,43 @@ export default function LoginPage() {
             Authenticate with World ID to access your health dashboard.
           </p>
 
-          <button
-            onClick={handleDirectLogin}
-            disabled={verified}
-            className="w-full flex items-center justify-center gap-3 py-3.5 px-6 rounded-xl font-semibold text-white transition-all duration-200 active:scale-[0.98] disabled:opacity-70"
-            style={{
-              background: verified
-                ? "linear-gradient(135deg, #16a34a, #15803d)"
-                : "linear-gradient(135deg, #4f46e5, #7c3aed)",
-              boxShadow: verified
-                ? "0 0 24px rgba(22,163,74,0.35)"
-                : "0 0 24px rgba(79,70,229,0.35)",
-            }}
+          <IDKitWidget
+            app_id={process.env.NEXT_PUBLIC_WLD_APP_ID as `app_${string}`}
+            action={process.env.NEXT_PUBLIC_WLD_ACTION!}
+            onSuccess={onSuccess}
+            handleVerify={handleVerify}
+            verification_level={VerificationLevel.Device}
+            environment="staging"
           >
-            {verified ? (
-              <>
-                <CheckIcon />
-                Verified — redirecting
-              </>
-            ) : (
-              <>
-                <WorldIDIcon />
-                Sign in with World ID
-              </>
+            {({ open }) => (
+              <button
+                onClick={open}
+                disabled={verified}
+                className="w-full flex items-center justify-center gap-3 py-3.5 px-6 rounded-xl font-semibold text-white transition-all duration-200 active:scale-[0.98] disabled:opacity-70"
+                style={{
+                  background: verified
+                    ? "linear-gradient(135deg, #16a34a, #15803d)"
+                    : "linear-gradient(135deg, #4f46e5, #7c3aed)",
+                  boxShadow: verified
+                    ? "0 0 24px rgba(22,163,74,0.35)"
+                    : "0 0 24px rgba(79,70,229,0.35)",
+                  cursor: "pointer",
+                }}
+              >
+                {verified ? (
+                  <>
+                    <CheckIcon />
+                    Verified — redirecting
+                  </>
+                ) : (
+                  <>
+                    <WorldIDIcon />
+                    Sign in with World ID
+                  </>
+                )}
+              </button>
             )}
-          </button>
+          </IDKitWidget>
 
           <div className="mt-6 flex items-center gap-3">
             <div className="h-px flex-1 bg-slate-700/60" />
